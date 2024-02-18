@@ -1,18 +1,33 @@
-def column_print(to_print, items_per_line=10) -> None:
+def column_print(to_print, items_per_line=10, string=False) -> str | None:
     """
     Prints a single list in columns
 
     Parameters:
-        to_print: A list of things to print
-        items_per_line: The number of items to prints per line; A.K.A., number of columns. default = 10
+        :param to_print: A list of things to print
+        :param items_per_line: The number of items to prints per line; A.K.A., number of columns. default = 10
+        :param string: Determines if the function returns a string or prints on its own.
     """
-    # Loop through the list and print (default) 10 items per line in columns
-    max_width = max(len(str(item)) for item in to_print)
-    for i, item in enumerate(to_print, 1):
-        print(f"{str(item):<{max_width}}", end=' ')
 
-        if i % items_per_line == 0:  # Check if we've reached the desired items per line
-            print()  # Move to the next line
+    max_width = max(len(str(item)) for item in to_print)
+
+    if string:
+        printable = ''
+        # Loop through the list and print (default) 10 items per line in columns
+        for i, item in enumerate(to_print, 1):
+            printable += f"{str(item):<{max_width}} "
+
+            if i % items_per_line == 0:  # Check if we've reached the desired items per line
+                printable += '\n'  # Move to the next line
+
+        return printable
+
+    else:
+        # Loop through the list and print (default) 10 items per line in columns
+        for i, item in enumerate(to_print, 1):
+            print(f"{str(item):<{max_width}}", end=' ')
+
+            if i % items_per_line == 0:  # Check if we've reached the desired items per line
+                print()  # Move to the next line
 
 
 def draw_bars(hbars, hbar, vbars, vbar, row_length, heading_space, column_width, cutoff):

@@ -1,18 +1,43 @@
 import generate_novelties
-import sieve_of_eratosthenes
-import usefull_prints
+import sieve_of_eratosthenes as soe
+import usefull_prints as uprint
 import PySimpleGUI as sg
 
+primes = soe.primes_up_to_100()
+primes_for_display = uprint.column_print(primes, 10, True)
 
 def make_window(theme='Default1'):
+    global primes
     sg.theme(theme)
     menu_def = [['&Application', ['E&xit']],
                 ['&Help', ['&About']]]
     right_click_menu_def = [[], ['Edit Me', 'Versions', 'Nothing', 'More Nothing', 'Exit']]
 
+    novelty_column = [sg.Multiline(
+        primes_for_display,
+        size=(45, 200), expand_x=True, expand_y=False, k='novelty output', font=('Helvetica', 14), write_only=True,
+        enable_events=False),
+    ]
+
+    novelties_layout = [[sg.Text("Enter the largest natural number to reach: ")],
+                        [sg.Input(key='max novelty', size=(10, 1), default_text='250'),
+                         sg.Button('Show', key='generate novelties')],
+                        [sg.Pane([
+                            sg.Col([[sg.T('Largest Known Prime: ##')],
+                                    [sg.Text('primes list:'), sg.T(primes_for_display)],
+                                    ]),
+                            sg.Column(
+                                layout=[
+                                    [sg.Stretch(), *novelty_column, sg.Stretch()]
+                                ],
+                                scrollable=True, vertical_scroll_only=False, size=(50, 200), key='novelty output',
+                                expand_y=True),
+                        ], size=(50, 200), orientation='h', expand_y=True, expand_x=True)],
+                        ]
+
     sieve_graph_layout = [
-        sg.Graph((500, 500), (0, 500), (500, 0),
-                 background_color='white', key='sieve graph')
+        sg.Graph((1000, 1000), (0, 1000), (1000, 0),
+                 background_color='white', key='sieve graph', expand_y=True)
     ]
 
     sieve_layout = [
@@ -23,7 +48,7 @@ def make_window(theme='Default1'):
             layout=[
                 [sg.Stretch(), *sieve_graph_layout, sg.Stretch()]
             ],
-            scrollable=True, vertical_scroll_only=True, size=(500, 200), key='sieve column')
+            scrollable=True, vertical_scroll_only=True, size=(1000, 500), key='sieve column', expand_y=True)
         ]
     ]
 
@@ -33,12 +58,13 @@ def make_window(theme='Default1'):
                         sg.Button('Test Progress bar')]]
 
     layout = [[sg.MenubarCustom(menu_def, key='-MENU-', font='Courier 15', tearoff=True)],
-              [sg.Text('All Things Prime', size=(38, 1), justification='center', font=("Helvetica", 16),
-                       relief=sg.RELIEF_RIDGE, k='-TEXT HEADING-', enable_events=True)]]
+              [sg.Stretch(), sg.Text('All Things Prime', size=(38, 1), justification='center', font=("Helvetica", 16),
+                                     relief=sg.RELIEF_RIDGE, k='-TEXT HEADING-', enable_events=True), sg.Stretch()]]
 
     layout += [[sg.TabGroup([[sg.Tab('Sieve', sieve_layout),
                               sg.Tab('progress bar', asthetic_layout),
-                              ]],  key='-TAB GROUP-', expand_x=True, expand_y=True
+                              sg.Tab('The Novelties', novelties_layout)
+                              ]], key='-TAB GROUP-', expand_x=True, expand_y=True
                             ),
                 ]]
 
