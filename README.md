@@ -6,9 +6,23 @@ The Novelties use a non-positional number system where each novelty is represent
 
 For example: the number 1176, which has a prime factorization of (2^3)(3)(7^2), would be written as a novelty as: 1-1-1-2-4-4, since 2 is the first prime, 3 is the second, and 7 is the fourth.
 
+## Installation and Use
+
+Python must be installed on your machine in order to run these modules.  This version runs through the command line and does not require any additional modules to be downloaded.
+
+### Files
+ - generate_novelties.py: Displays all the novelties from the natural number 1 up to the input value.
+   Requires all three files to run.
+
+ - sieve_of_eratosthenes.py: Finds all primes up to the input value.
+   Can run on its own to show a visualization of the process (not recommened to input large numbers, lots of printing. n < 1000)
+ 
+ - usefull_prints.py:  Module for printing lists in rows.
+   Can run standalone to see examples of printing.
+
 ---
 
-## Why?
+# Why?
 
 Our understanding of quantities is based on an additive principle; where, to get from one number to the next, we add 1 (see the [Peano Axioms](https://youtu.be/3gBoP8jZ1Is?si=4pPOlf5IM-a0WDF2) for more details of this).  But this means that the essence of "one-ness" is found in having *one* thing, and "two-ness is having *one* thing and then having another *one* thing, and "three-ness" is having *one* thing, having another *one* thing and then having **another** *one* thing, ... ad nauseam.  If that is the case, then each number is essentially just a different bundle of ones.  The idea is to attribute **this** notion instead, to our understanding of oneness.  In fact, it is such an obvious way to think of numbers, we give it the special name of "identity", which we denote with "*e*".  This implies that the natural number 1 is equal to *e* as a novelty, or \( 1 := e \).
 
