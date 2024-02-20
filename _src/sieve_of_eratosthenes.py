@@ -3,7 +3,7 @@ import usefull_prints as uprint
 internal = False
 
 
-def fast_sieve(n, start: int = 2):
+def fast_sieve(n, start: int = 2, get_checks=False):
 
     total_checks = 0
     # Initialize an array of Boolean values from :param start: to n, initially set to true
@@ -12,14 +12,15 @@ def fast_sieve(n, start: int = 2):
 
     # Set the multiples of each prime to false
     for i in range(2, int(n ** 0.5) + 1):
-        for j in range(max(i * i, (start + i - 1) // i * i) - start, n - start + 1, i):
-            is_prime[j] = False
-            total_checks += 1
-        counter += 1
+        if is_prime[i]:
+            for j in range(max(i * i, (start + i - 1) // i * i) - start, n - start + 1, i):
+                is_prime[j] = False
+                total_checks += 1
+            counter += 1
 
     # Return all primes from :param start: to n
     primes = [i + start for i in range(len(is_prime)) if is_prime[i]]
-    if internal:
+    if get_checks:
         return primes, counter, total_checks
     else:
         return primes
@@ -41,7 +42,10 @@ def visual_sieve(list_of_numbers, show: bool = False):
     return len(skips), list_of_numbers
 
 
-def sieve_of_eratosthenes(n, show=False, start: int = 2):
+def sieve_of_eratosthenes(n, show=False, start: int = 2, return_checks=False):
+    global internal
+    if internal:
+        return_checks = True
     if show:
         primes = [2]
         passes = 0
@@ -69,7 +73,7 @@ def sieve_of_eratosthenes(n, show=False, start: int = 2):
         else:
             return primes
     else:
-        return fast_sieve(n, start=start)
+        return fast_sieve(n, start=start, get_checks=return_checks)
 
 
 def main():

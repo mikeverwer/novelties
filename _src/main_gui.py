@@ -1,12 +1,26 @@
 import generate_novelties
 import sieve_of_eratosthenes as soe
 import usefull_prints as uprint
+import colours
 import PySimpleGUI as sg
+import time
 
+colours = colours.colours()
 primes = soe.primes_up_to_100()
 primes_for_display = uprint.column_print(primes, 10, True)
+sieve_value_coord = {}
+sieve_isprime = {}
+sieve_current_value = 2
+em_12 = 16
+update_interval = 1
+animate_sieve = False
+primes_so_far = []
+scratch_animation_passes = 1
+sieve_graph_x = 1000
+sieve_graph_y = 20000
 
-def make_window(theme='Default1'):
+
+def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
     global primes
     sg.theme(theme)
     menu_def = [['&Application', ['E&xit']],
@@ -36,20 +50,33 @@ def make_window(theme='Default1'):
                         ]
 
     sieve_graph_layout = [
-        sg.Graph((1000, 1000), (0, 1000), (1000, 0),
+        sg.Graph((sieve_graph_x, sieve_graph_y), (0, sieve_graph_y), (sieve_graph_x, 0),
                  background_color='white', key='sieve graph', expand_y=True)
     ]
 
     sieve_layout = [
         [sg.Text('The Sieve of Eratosthenes', font=('Helvetica', 16))],
         [sg.Text('To which number shall we search?', font=('Helvetica', 12))],
-        [sg.Input(key='sieve input', size=(10, 1)), sg.Button('Go!')],
+        [sg.Input(key='sieve input', size=(10, 1), default_text='200'), sg.Button('Go!', key='go-sieve')],
         [sg.Column(
             layout=[
                 [sg.Stretch(), *sieve_graph_layout, sg.Stretch()]
             ],
-            scrollable=True, vertical_scroll_only=True, size=(1000, 500), key='sieve column', expand_y=True)
+            scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x, 500), key='sieve column', expand_y=True),
+         sg.Column(
+             layout=[
+                 [sg.Text('Primes found so far:')],
+                 [sg.Text(str(primes_so_far), key='found primes')]
+             ]
+         )
         ]
+    ]
+
+    log_layout = [
+        [sg.Text('Log:', font='Helvetica 16')],
+        [sg.Multiline(size=(60, 15), font='Courier 8', expand_x=True, expand_y=True, write_only=True,
+                      reroute_stdout=True, reroute_stderr=True, echo_stdout_stderr=True, autoscroll=True,
+                      auto_refresh=True)]
     ]
 
     asthetic_layout = [[sg.T('Anything that you would use for asthetics is in this tab!')],
@@ -63,25 +90,112 @@ def make_window(theme='Default1'):
 
     layout += [[sg.TabGroup([[sg.Tab('Sieve', sieve_layout),
                               sg.Tab('progress bar', asthetic_layout),
-                              sg.Tab('The Novelties', novelties_layout)
+                              sg.Tab('The Novelties', novelties_layout),
+                              sg.Tab('Log', log_layout)
                               ]], key='-TAB GROUP-', expand_x=True, expand_y=True
                             ),
                 ]]
 
-    layout[-1].append(sg.Sizegrip())
+    # layout[-1].append(sg.Sizegrip())
     window = sg.Window('Primes and Novelties', layout, right_click_menu=right_click_menu_def,
                        right_click_menu_tearoff=True, grab_anywhere=True, resizable=True, margins=(0, 0),
-                       use_custom_titlebar=True, finalize=True, keep_on_top=True)
+                       finalize=True, keep_on_top=True)
     window.set_min_size(window.size)
     return window
 
 
+sieve_animation_steps = {'find coordinates': False,
+                         'draw numbers': False,
+                         'box prime': False,
+                         'scratch multiple': False,
+                         'finished': False
+                         }
+
+
+def sieve_animation(window, values, sieve_passes: int | float, em=em_12):
+    graph = window['sieve graph']
+    global sieve_animation_steps
+    global primes_so_far
+    global sieve_value_coord
+    global sieve_isprime
+    global sieve_current_value
+    global scratch_animation_passes
+
+    if sieve_animation_steps['find coordinates']:
+        max_sieve = int(values['sieve input'])
+        sieve_column_width = len(str(max_sieve)) + 2
+        columns = 900 // (sieve_column_width * em)
+        # rows = (max_sieve // columns) + 1
+        numbers = [i for i in range(2, max_sieve + 1)]
+        sieve_value_coord = {}
+        sieve_isprime = [True] * len(numbers)
+
+        for index, number in enumerate(numbers):
+            row = index // columns + 1
+            column = index % columns + 1
+            sieve_value_coord[number] = (column * (sieve_column_width * em), row * 1.5 * em)
+
+        # move to next step
+        sieve_animation_steps['find coordinates'] = False
+        sieve_animation_steps['draw numbers'] = True
+        print('[LOG] Coordinates found.')
+
+    elif sieve_animation_steps['draw numbers']:
+        print('[LOG] Drawing numbers.')
+        for number in sieve_value_coord:
+            graph.draw_text(str(number), sieve_value_coord[number], font='Courier 12')
+        sieve_animation_steps['box prime'] = True
+        sieve_animation_steps['draw numbers'] = False
+
+    elif sieve_animation_steps['box prime']:
+        print(f"[LOG] Drawing box.")
+        # find prime
+        prime = sieve_isprime.index(True) + 2
+        sieve_isprime[prime - 2] = False
+        primes_so_far.append(prime)
+        window['found primes'].update(value=primes_so_far)
+        # choose colour
+        colour = colours[(prime * 100) % len(colours)]
+        bottom_left = (sieve_value_coord[prime][0] - (len(str(prime)) * em / 2), sieve_value_coord[prime][1] - (em / 2))
+        bottom_right = (sieve_value_coord[prime][0] + (len(str(prime)) * em / 2), sieve_value_coord[prime][1] - (em / 2))
+        top_left = (sieve_value_coord[prime][0] - (len(str(prime)) * em / 2), sieve_value_coord[prime][1] + (em / 2))
+        top_right = (sieve_value_coord[prime][0] + (len(str(prime)) * em / 2), sieve_value_coord[prime][1] + (em / 2))
+        graph.draw_line(bottom_left, bottom_right, colour)
+        graph.draw_line(bottom_left, top_left, colour)
+        graph.draw_line(top_right, top_left, colour)
+        graph.draw_line(top_right, bottom_right, colour)
+        # move to next step
+        sieve_animation_steps['box prime'] = False
+        scratch_animation_passes = 0  # start scratching here
+        sieve_animation_steps['scratch multiple'] = True
+
+    elif sieve_animation_steps['scratch multiple']:
+        print(f"[LOG] Scratch Multiple")
+        prime = primes_so_far[-1]
+        # choose colour
+        colour = colours[(prime * 100) % len(colours)]
+        # find number to scratch
+        scratch = (prime ** 2) + scratch_animation_passes
+        # find draw height
+        center = sieve_value_coord[scratch]
+        length = len(str(scratch)) * em
+        bump = sieve_passes // em
+        h_offset = ((-1) ** scratch_animation_passes) * (bump * ((scratch_animation_passes + 1) // 2))
+        height = center[1] + h_offset
+        graph.draw_line((sieve_value_coord[scratch][0] - (length / 2), height), (sieve_value_coord[scratch][0] + (length / 2), height), colour)
+        # move to next step
+        sieve_animation_steps['scratch multiple'] = False
+        sieve_animation_steps['finished'] = True
+
+
 def main():
-    window = make_window(sg.theme())
+    window = make_window(sg.theme(), sieve_graph_x, sieve_graph_y)
+    sieve_graph = window['sieve graph']
+    global animate_sieve
 
     # This is an Event Loop
     while True:
-        event, values = window.read(timeout=1)
+        event, values = window.read(timeout=1000 // update_interval)
         # keep an animation running so show things are happening
         if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
             print('============ Event = ', event, ' ==============')
@@ -96,9 +210,44 @@ def main():
             print("[LOG] Clicked Test Progress Bar!")
             progress_bar = window['-PROGRESS BAR-']
             for i in range(100):
-                print("[LOG] Updating progress bar by 1 step (" + str(i) + ")")
-                progress_bar.update(current_count=i + 1)
+                if time.time() % 100 == 0:
+                    print("[LOG] Updating progress bar by 1 step (" + str(i) + ")")
+                    progress_bar.update(current_count=i + 1)
             print("[LOG] Progress bar complete!")
+
+        elif event == 'go-sieve':
+            max_sieve = int(values['sieve input'])
+            sieve_column_width = len(str(max_sieve)) + 2
+            columns = 900 // (sieve_column_width * em_12)
+            rows = (max_sieve // columns) + 1
+            _, required_passes, _ = soe.fast_sieve(max_sieve, get_checks=True)
+            # check graph size, remake if too small
+            if rows <= (sieve_graph_y // em_12) + em_12:  # enough rows
+                sieve_graph.erase()
+                sieve_animation_steps['finished'] = False
+                animate_sieve = True
+                sieve_animation_steps['find coordinates'] = True
+            else:
+                # event = sg.popup('Warning', 'Will reset the window.', keep_on_top=True, grab_anywhere=True)
+                event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
+                                 custom_text=('Continue', 'Cancel'), keep_on_top=True)
+
+                print(f'button: {event}')
+                print((sieve_graph_y // em_12) + em_12)
+                if event == 'Continue':
+                    window.close()
+                    window = make_window(sg.theme(), sieve_graph_y=sieve_graph_y)
+
+        elif event == 'OK':
+            print("[LOG] Rebuild the window.")
+            window.close()
+            window = make_window(sg.theme(), sieve_graph_y=sieve_graph_y)
+
+        if animate_sieve:
+            print('[LOG] Animation Pass')
+            sieve_animation(window, values, required_passes, em_12)
+            if sieve_animation_steps['finished']:
+                animate_sieve = False
 
     window.close()
     exit(0)
