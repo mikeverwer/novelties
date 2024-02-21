@@ -14,7 +14,7 @@ sieve_current_value = 2
 em_12 = 16
 update_interval = 1
 animate_sieve = False
-primes_so_far = []
+primes_so_far = ['None']
 scratch_animation_passes = 1
 sieve_graph_x = 1000
 sieve_graph_y = 20000
@@ -57,7 +57,8 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
     sieve_layout = [
         [sg.Text('The Sieve of Eratosthenes', font=('Helvetica', 16))],
         [sg.Text('To which number shall we search?', font=('Helvetica', 12))],
-        [sg.Input(key='sieve input', size=(10, 1), default_text='200'), sg.Button('Go!', key='go-sieve')],
+        [sg.Input(key='sieve input', size=(10, 1), default_text='200'), sg.Button('Go!', key='go-sieve'),
+         sg.Button('Pause', k='pause sieve')],
         [sg.Column(
             layout=[
                 [sg.Stretch(), *sieve_graph_layout, sg.Stretch()]
@@ -65,10 +66,11 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
             scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x, 500), key='sieve column', expand_y=True),
          sg.Column(
              layout=[
-                 [sg.Text('Primes found so far:')],
-                 [sg.Text(str(primes_so_far), key='found primes')]
-             ]
-         )
+                 [sg.Text('Primes found so far:', font='Helvetica 16')],
+                 [sg.Text(uprint.column_print(primes_so_far, 5, string=True), key='found primes',
+                          font='Courier 12', expand_x=False)]
+             ],
+         expand_x=False, vertical_scroll_only=True)
         ]
     ]
 
@@ -114,6 +116,7 @@ sieve_animation_steps = {'find coordinates': False,
 
 def sieve_animation(window, values, sieve_passes: int | float, em=em_12):
     graph = window['sieve graph']
+    global update_interval
     global sieve_animation_steps
     global primes_so_far
     global sieve_value_coord
@@ -148,50 +151,80 @@ def sieve_animation(window, values, sieve_passes: int | float, em=em_12):
         sieve_animation_steps['draw numbers'] = False
 
     elif sieve_animation_steps['box prime']:
-        print(f"[LOG] Drawing box.")
         # find prime
-        prime = sieve_isprime.index(True) + 2
-        sieve_isprime[prime - 2] = False
-        primes_so_far.append(prime)
-        window['found primes'].update(value=primes_so_far)
-        # choose colour
-        colour = colours[(prime * 100) % len(colours)]
-        bottom_left = (sieve_value_coord[prime][0] - (len(str(prime)) * em / 2), sieve_value_coord[prime][1] - (em / 2))
-        bottom_right = (sieve_value_coord[prime][0] + (len(str(prime)) * em / 2), sieve_value_coord[prime][1] - (em / 2))
-        top_left = (sieve_value_coord[prime][0] - (len(str(prime)) * em / 2), sieve_value_coord[prime][1] + (em / 2))
-        top_right = (sieve_value_coord[prime][0] + (len(str(prime)) * em / 2), sieve_value_coord[prime][1] + (em / 2))
-        graph.draw_line(bottom_left, bottom_right, colour)
-        graph.draw_line(bottom_left, top_left, colour)
-        graph.draw_line(top_right, top_left, colour)
-        graph.draw_line(top_right, bottom_right, colour)
-        # move to next step
-        sieve_animation_steps['box prime'] = False
-        scratch_animation_passes = 0  # start scratching here
-        sieve_animation_steps['scratch multiple'] = True
+        if True in sieve_isprime:
+            prime = sieve_isprime.index(True) + 2
+            update_interval = 25 if prime > int(values['sieve input']) ** 0.5 else 1
+            if prime <= int(values['sieve input']):
+                print(f"[LOG] Prime Found {prime}. Drawing box.")
+                sieve_isprime[prime - 2] = False
+                primes_so_far.append(prime)
+                window['found primes'].update(value=uprint.column_print(primes_so_far, 5, string=True))
+                # choose colour
+                colour = colours[(prime * 100) % len(colours)]
+                bottom_left = (sieve_value_coord[prime][0] - (len(str(prime)) * em / 2), sieve_value_coord[prime][1] - (em / 2))
+                bottom_right = (sieve_value_coord[prime][0] + (len(str(prime)) * em / 2), sieve_value_coord[prime][1] - (em / 2))
+                top_left = (sieve_value_coord[prime][0] - (len(str(prime)) * em / 2), sieve_value_coord[prime][1] + (em / 2))
+                top_right = (sieve_value_coord[prime][0] + (len(str(prime)) * em / 2), sieve_value_coord[prime][1] + (em / 2))
+                graph.draw_line(bottom_left, bottom_right, colour)
+                graph.draw_line(bottom_left, top_left, colour)
+                graph.draw_line(top_right, top_left, colour)
+                graph.draw_line(top_right, bottom_right, colour)
+
+                # move to next step
+                sieve_animation_steps['box prime'] = False
+                scratch_animation_passes = 0
+                sieve_animation_steps['scratch multiple'] = True
+            else:
+                sieve_animation_steps['box prime'] = False
+                sieve_animation_steps['finished'] = True
+
+        else:
+            sieve_animation_steps['box prime'] = False
+            sieve_animation_steps['finished'] = True
 
     elif sieve_animation_steps['scratch multiple']:
-        print(f"[LOG] Scratch Multiple")
+        update_interval = 75  # speed up animation
         prime = primes_so_far[-1]
         # choose colour
         colour = colours[(prime * 100) % len(colours)]
         # find number to scratch
-        scratch = (prime ** 2) + scratch_animation_passes
-        # find draw height
-        center = sieve_value_coord[scratch]
-        length = len(str(scratch)) * em
-        bump = sieve_passes // em
-        h_offset = ((-1) ** scratch_animation_passes) * (bump * ((scratch_animation_passes + 1) // 2))
-        height = center[1] + h_offset
-        graph.draw_line((sieve_value_coord[scratch][0] - (length / 2), height), (sieve_value_coord[scratch][0] + (length / 2), height), colour)
-        # move to next step
-        sieve_animation_steps['scratch multiple'] = False
-        sieve_animation_steps['finished'] = True
+        scratch = (prime ** 2) + (scratch_animation_passes * prime)
+        if scratch <= int(values['sieve input']):
+            print(f"[LOG] Scratch Multiple: {scratch}")
+            sieve_isprime[scratch - 2] = False
+            # find draw height
+            center = sieve_value_coord[scratch]
+            length = len(str(scratch)) * em
+            # bump = sieve_passes // em
+            bump = 2
+            h_offsets = [(((-1) ** (i - 1)) * (bump * ((i + 1) // 2))) for i in range((em // 2) + 1)]
+            h_offset = h_offsets[(len(primes_so_far) - 1) % len(h_offsets)]
+            height = center[1] + h_offset
+            graph.draw_line((sieve_value_coord[scratch][0] - (length / 2), height),
+                            (sieve_value_coord[scratch][0] + (length / 2), height), colour)
+
+            # move to next step
+            if scratch + prime <= int(values['sieve input']):  # scratch another
+                sieve_animation_steps['scratch multiple'] = True
+                scratch_animation_passes += 1
+            else:
+                sieve_animation_steps['scratch multiple'] = False  # move to next prime
+                sieve_animation_steps['box prime'] = True
+                update_interval = 1
+
+        else:
+            sieve_animation_steps['scratch multiple'] = False  # move to next prime
+            sieve_animation_steps['box prime'] = True
+            update_interval = 1
+
 
 
 def main():
     window = make_window(sg.theme(), sieve_graph_x, sieve_graph_y)
     sieve_graph = window['sieve graph']
     global animate_sieve
+    global primes_so_far
 
     # This is an Event Loop
     while True:
@@ -221,6 +254,7 @@ def main():
             columns = 900 // (sieve_column_width * em_12)
             rows = (max_sieve // columns) + 1
             _, required_passes, _ = soe.fast_sieve(max_sieve, get_checks=True)
+            primes_so_far = []
             # check graph size, remake if too small
             if rows <= (sieve_graph_y // em_12) + em_12:  # enough rows
                 sieve_graph.erase()
@@ -237,6 +271,9 @@ def main():
                 if event == 'Continue':
                     window.close()
                     window = make_window(sg.theme(), sieve_graph_y=sieve_graph_y)
+
+        elif event == 'pause sieve':
+            animate_sieve = not animate_sieve
 
         elif event == 'OK':
             print("[LOG] Rebuild the window.")
