@@ -4,8 +4,10 @@ import usefull_prints as uprint
 import colours
 import PySimpleGUI as sg
 import time
+import random
 
-colours = colours.colours()
+colours_list = colours.list_colours()
+colours_dict = colours.dict_colours()
 primes = soe.primes_up_to_100()
 
 em_12 = 16
@@ -141,6 +143,7 @@ def reset_globals():
     sieve_animation_steps = {'find coordinates': False,
                              'draw numbers': False,
                              'box prime': False,
+                             'prime colour': '',
                              'scratch multiple': False,
                              'finished': False,
                              'hurry up': None
@@ -162,9 +165,45 @@ def sieve_animation(window, values, em=em_12):
     global sieve_isprime
     global scratch_animation_passes
 
+    def choose_colour(seed):
+
+        def is_bright_color(hex_code):
+            # Convert hex code to RGB values
+            r = int(hex_code[1:3], 16) / 255.0
+            g = int(hex_code[3:5], 16) / 255.0
+            b = int(hex_code[5:7], 16) / 255.0
+
+            # Calculate luminance
+            luminance = (0.2126 * r) + (0.587 * g) + (0.0722 * b)
+
+            # Define a threshold for brightness (adjust as needed)
+            brightness_threshold = 0.40
+
+            print(luminance)
+
+            # Return True if the color is considered bright, False otherwise
+            return luminance > brightness_threshold
+
+        colour_name = random.choice(colours_list)
+        # colour_name = colours_list[(int(seed) * 100) % len(colours_list)]
+        colour_hex = colours_dict[colour_name]
+        attempts = 1  # ensure the colour is "appropriate"
+        print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
+        while is_bright_color(colour_hex):
+            attempts += 1
+            index_of_colour = (int(seed) ** attempts) % len(colours_list)
+            colour_name = random.choice(colours_list)
+            colour_hex = colours_dict[colour_name]
+            print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
+
+        return colour_name
+
     def draw_box(thing):
         # choose colour
-        box_colour = colours[(thing * 100) % len(colours)]
+        sieve_animation_steps['prime colour'] = choose_colour(int(thing))
+        box_colour = sieve_animation_steps['prime colour']
+
+        # get geometry
         bottom_left = (
             sieve_value_coord[thing][0] - (len(str(thing)) * em / 2), sieve_value_coord[thing][1] - (em / 2))
         bottom_right = (
@@ -173,24 +212,25 @@ def sieve_animation(window, values, em=em_12):
             sieve_value_coord[thing][0] - (len(str(thing)) * em / 2), sieve_value_coord[thing][1] + (em / 2))
         top_right = (
             sieve_value_coord[thing][0] + (len(str(thing)) * em / 2), sieve_value_coord[thing][1] + (em / 2))
+
+        # draw
         graph.draw_line(bottom_left, bottom_right, box_colour, width=2)
         graph.draw_line(bottom_left, top_left, box_colour, width=2)
         graph.draw_line(top_right, top_left, box_colour, width=2)
         graph.draw_line(top_right, bottom_right, box_colour, width=2)
 
-    def draw_scratch(word):
+    def draw_scratch(word, line_colour=sieve_animation_steps['prime colour']):
         # find draw height
         center = sieve_value_coord[scratch]
-        length = len(str(scratch)) * em
+        length = len(str(scratch)) * em - (em * len(str(scratch)) % 2)
         bump = int(em / 6) + 1
-        print(bump)
         # generate the sequence: [0, bump, -bump, 2bump, -2bump, ...]
         # sequence is used to handle the gap becoming too large, so we cycle through the sequence in that case
         h_offsets = [(((-1) ** (i - 1)) * (bump * ((i + 1) // 2))) for i in range((int(em) + 1 // 2) + 1)]  #
         h_offset = h_offsets[(len(primes_so_far) - 1) % len(h_offsets)]
         height = center[1] + h_offset
         graph.draw_line((sieve_value_coord[scratch][0] - (length / 2), height),
-                        (sieve_value_coord[scratch][0] + (length / 2), height), colour, width=2)
+                        (sieve_value_coord[scratch][0] + (length / 2), height), line_colour, width=2)
 
     if sieve_animation_steps['find coordinates']:
         max_sieve = int(values['sieve input'])
@@ -268,7 +308,7 @@ def sieve_animation(window, values, em=em_12):
     elif sieve_animation_steps['scratch multiple']:
         prime = primes_so_far[-1]
         # choose colour
-        colour = colours[(prime * 100) % len(colours)]
+        colour = colours_list[(prime * 100) % len(colours_list)]
         # find number to scratch
         scratch = (prime ** 2) + (scratch_animation_passes * prime)
         if scratch <= int(values['sieve input']):
