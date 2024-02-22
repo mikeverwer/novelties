@@ -100,7 +100,8 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
         [sg.Text('Log:', font='Helvetica 16')],
         [sg.Multiline(size=(60, 15), font='Courier 8', expand_x=True, expand_y=True, write_only=True,
                       reroute_stdout=True, reroute_stderr=True, echo_stdout_stderr=True, autoscroll=True,
-                      auto_refresh=True)]
+                      auto_refresh=True)],
+        [sg.T("Butts")]
     ]
 
     placeholder_layout = [[sg.T('placeholder tab!')],
