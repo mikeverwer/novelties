@@ -66,7 +66,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
 
     sieve_graph_layout = [
         sg.Graph((sieve_graph_x, sieve_graph_y), (0, sieve_graph_y), (sieve_graph_x, 0),
-                 background_color='lavender', key='sieve graph', expand_y=True)  # colour AliceBlue
+                 background_color='lavender', key='sieve graph', expand_y=True, enable_events=True)  # colour AliceBlue
     ]
 
     sieve_layout = [
@@ -81,7 +81,8 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
          sg.Button('  1x  ', k='sieve_speed:1'), sg.Button('  2x  ', k='sieve_speed:2'),
          sg.Button('  4x  ', k='sieve_speed:4'), sg.Button('  8x  ', k='sieve_speed:8'),
          sg.T('    Size:', font='Helvetica 14'),
-         sg.DropDown((10, 12, 14, 16, 18), default_value=14, k='sieve_font', enable_events=True, readonly=True)
+         sg.DropDown((10, 12, 14, 16, 18), default_value=14, k='sieve_font', enable_events=True, readonly=True),
+         sg.Push(), sg.T('', k='sieve value display', font='Helvetica 14 bold')
          ],
         [sg.Column(
             layout=[
@@ -102,8 +103,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
         [sg.Text('Log:', font='Helvetica 16')],
         [sg.Multiline(size=(60, 15), font='Courier 8', expand_x=True, expand_y=True, write_only=True,
                       reroute_stdout=True, reroute_stderr=True, echo_stdout_stderr=True, autoscroll=True,
-                      auto_refresh=True)],
-        [sg.T("Butts")]
+                      auto_refresh=True)]
     ]
 
     placeholder_layout = [[sg.T('placeholder tab!')],
@@ -177,7 +177,7 @@ def sieve_animation(window, values, em=em_12):
             luminance = (0.2126 * r) + (0.587 * g) + (0.0722 * b)
 
             # Define a threshold for brightness (adjust as needed)
-            brightness_threshold = 0.2
+            brightness_threshold = 0.6
 
             print(luminance)
 
@@ -257,7 +257,7 @@ def sieve_animation(window, values, em=em_12):
     elif sieve_animation_steps['draw numbers']:
         print('[LOG] Drawing numbers.')
         for number in sieve_value_coord:
-            graph.draw_text(str(number), sieve_value_coord[number], font=sieve_font)
+            graph.draw_text(str(number), sieve_value_coord[number], font=sieve_font + ' bold')
         # move to next step
         sieve_animation_steps['box prime'] = True
         sieve_animation_steps['draw numbers'] = False
@@ -424,6 +424,16 @@ def main():
             print("[LOG] Rebuild the window.")
             window.close()
             window = make_window(sg.theme(), sieve_graph_y=sieve_graph_y)
+
+        elif event == 'sieve graph':  # display info about value at coords
+            # find coordinate boundaries
+            column_width = len(str(values['sieve input'])) + 2
+            x_coord = (int(values[event][0]) - (column_width)) // (column_width * text_height)
+            y_coord = int(values[event][1]) // (1.5 * text_height)
+            print(column_width * text_height)
+            print(x_coord, y_coord)
+            # number = sieve_value_coord.keys((x_coord, y_coord))
+            window['sieve value display'].update(value=str(values['sieve graph']))
 
         if animate_sieve:
             print('[LOG] Animation Pass')
