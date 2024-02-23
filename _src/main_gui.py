@@ -6,7 +6,7 @@ import PySimpleGUI as sg
 import time
 import random
 
-colours_list = colours.list_colours()
+colours_list = colours.list_colour_names()
 colours_dict = colours.dict_colours()
 primes = soe.primes_up_to_100()
 
@@ -177,24 +177,27 @@ def sieve_animation(window, values, em=em_12):
             luminance = (0.2126 * r) + (0.587 * g) + (0.0722 * b)
 
             # Define a threshold for brightness (adjust as needed)
-            brightness_threshold = 0.40
+            brightness_threshold = 0.2
 
             print(luminance)
 
             # Return True if the color is considered bright, False otherwise
             return luminance > brightness_threshold
 
-        colour_name = random.choice(colours_list)
-        # colour_name = colours_list[(int(seed) * 100) % len(colours_list)]
+        # colour_name = random.choice(colours_list)  # colour is random each run
+        colour_name = colours_list[(int(seed) * 100) % len(colours_list)]  # colour tied to prime
         colour_hex = colours_dict[colour_name]
         attempts = 1  # ensure the colour is "appropriate"
         print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
         while is_bright_color(colour_hex):
             attempts += 1
-            index_of_colour = (int(seed) ** attempts) % len(colours_list)
-            colour_name = random.choice(colours_list)
+            # colour_name = random.choice(colours_list)  # colour is random each run
+            colour_name = colours_list[(int(seed) ** (attempts * 2)) % len(colours_list)]  # colour tied to prime
             colour_hex = colours_dict[colour_name]
             print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
+            if attempts > 5:  # limit attempts
+                colour_name = random.choice(colours_list)  # colour is random each run
+                colour_hex = colours_dict[colour_name]
 
         return colour_name
 
@@ -223,10 +226,10 @@ def sieve_animation(window, values, em=em_12):
         # find draw height
         center = sieve_value_coord[scratch]
         length = len(str(scratch)) * em - (em * len(str(scratch)) % 2)
-        bump = int(em / 6) + 1
-        # generate the sequence: [0, bump, -bump, 2bump, -2bump, ...]
+        bump = int(em / 6) + 1  # decent approximation?
+        # generate the sequence: [0, bump, -bump, 2bump, -2bump, ..., nbump, -nbump] where nbump < em / 2
         # sequence is used to handle the gap becoming too large, so we cycle through the sequence in that case
-        h_offsets = [(((-1) ** (i - 1)) * (bump * ((i + 1) // 2))) for i in range((int(em) + 1 // 2) + 1)]  #
+        h_offsets = [(((-1) ** (i - 1)) * (bump * ((i + 1) // 2))) for i in range((int(em) + 1) // 2)]  #
         h_offset = h_offsets[(len(primes_so_far) - 1) % len(h_offsets)]
         height = center[1] + h_offset
         graph.draw_line((sieve_value_coord[scratch][0] - (length / 2), height),
