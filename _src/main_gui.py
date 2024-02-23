@@ -10,10 +10,6 @@ colours_list = colours.list_colour_names()
 colours_dict = colours.dict_colours()
 primes = soe.primes_up_to_100()
 
-em_12 = 16
-em_14 = 18.66666667
-em_16 = 21.33333333
-em_18 = 24
 sieve_graph_x = 1000
 sieve_graph_y = 20000
 update_interval = 1
@@ -27,8 +23,9 @@ sieve_animation_steps = {'find coordinates': False,
                          'finished': False,
                          'hurry up': None
                          }
-sieve_value_coord = {}
-sieve_isprime = {}
+sieve_value_coord = dict
+sieve_coord_value = dict
+sieve_isprime = dict
 animate_sieve = False
 primes_so_far = ['None']
 scratch_animation_passes = int
@@ -155,15 +152,36 @@ def reset_globals():
     animation_speed_sieve = 1
 
 
-def sieve_animation(window, values, em=em_12):
+def pt_to_px(pt: int):
+    return round((pt / 72) * 96)
+
+
+def sieve_animation(window, values, em: int):
     graph = window['sieve graph']
     global update_interval
     global animation_speed_sieve
     global sieve_animation_steps
     global primes_so_far
     global sieve_value_coord
+    global sieve_coord_value
     global sieve_isprime
     global scratch_animation_passes
+
+    def make_coords(largest: int):
+        global sieve_value_coord
+        column_width = len(str(largest)) + 2
+        number_of_columns = 900 // (column_width * em)
+        # rows = (largest // number_of_columns) + 1
+        value = [i for i in range(2, largest + 1)]
+        sieve_value_coord = {}
+        sieve_isprime = [True] * len(numbers)
+
+        for index, number in enumerate(numbers):
+            row = index // columns + 1
+            column = index % columns + 1
+            coords = (column * (column_width * em), row * 1.5 * em)
+            sieve_value_coord[number] = coords
+            sieve_coord_value[coords] = number
 
     def choose_colour(seed):
 
@@ -177,7 +195,7 @@ def sieve_animation(window, values, em=em_12):
             luminance = (0.2126 * r) + (0.587 * g) + (0.0722 * b)
 
             # Define a threshold for brightness (adjust as needed)
-            brightness_threshold = 0.6
+            brightness_threshold = 0.55
 
             print(luminance)
 
@@ -185,7 +203,7 @@ def sieve_animation(window, values, em=em_12):
             return luminance > brightness_threshold
 
         # colour_name = random.choice(colours_list)  # colour is random each run
-        colour_name = colours_list[(int(seed) * 100) % len(colours_list)]  # colour tied to prime
+        colour_name = colours_list[(int(seed) * 97) % len(colours_list)]  # colour tied to prime
         colour_hex = colours_dict[colour_name]
         attempts = 1  # ensure the colour is "appropriate"
         print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
@@ -208,13 +226,13 @@ def sieve_animation(window, values, em=em_12):
 
         # get geometry
         bottom_left = (
-            sieve_value_coord[thing][0] - (len(str(thing)) * em / 2), sieve_value_coord[thing][1] - (em / 2))
+            sieve_value_coord[thing][0] - (len(str(thing)) * em / 2), sieve_value_coord[thing][1] + (em / 2) - 1)
         bottom_right = (
-            sieve_value_coord[thing][0] + (len(str(thing)) * em / 2), sieve_value_coord[thing][1] - (em / 2))
+            sieve_value_coord[thing][0] + (len(str(thing)) * em / 2), sieve_value_coord[thing][1] + (em / 2) - 1)
         top_left = (
-            sieve_value_coord[thing][0] - (len(str(thing)) * em / 2), sieve_value_coord[thing][1] + (em / 2))
+            sieve_value_coord[thing][0] - (len(str(thing)) * em / 2), sieve_value_coord[thing][1] - (em / 2))
         top_right = (
-            sieve_value_coord[thing][0] + (len(str(thing)) * em / 2), sieve_value_coord[thing][1] + (em / 2))
+            sieve_value_coord[thing][0] + (len(str(thing)) * em / 2), sieve_value_coord[thing][1] - (em / 2))
 
         # draw
         graph.draw_line(bottom_left, bottom_right, box_colour, width=2)
@@ -226,7 +244,7 @@ def sieve_animation(window, values, em=em_12):
         # find draw height
         center = sieve_value_coord[scratch]
         length = len(str(scratch)) * em - (em * len(str(scratch)) % 2)
-        bump = int(em / 6) + 1  # decent approximation?
+        bump = 2  # (em / 6) + 1 decent approximation?
         # generate the sequence: [0, bump, -bump, 2bump, -2bump, ..., nbump, -nbump] where nbump < em / 2
         # sequence is used to handle the gap becoming too large, so we cycle through the sequence in that case
         h_offsets = [(((-1) ** (i - 1)) * (bump * ((i + 1) // 2))) for i in range((int(em) + 1) // 2)]  #
@@ -354,7 +372,7 @@ def main():
     global animation_speed_sieve
     global primes_so_far
     global sieve_font
-    text_height = em_12
+    text_height = pt_to_px(int(sieve_font[-2:]))
 
     # This is an Event Loop
     while True:
@@ -409,7 +427,7 @@ def main():
         elif event == 'sieve_font':
             print("[LOG] Clicked Font Size")
             sieve_font = 'Courier ' + str(values[event])
-            text_height = round((values[event] / 72) * 96)  # calculate text size in pixels
+            text_height = pt_to_px(values[event])  # calculate text size in pixels
 
         elif event == 'pause sieve':
             print("[LOG] Clicked Pause/Play")
@@ -428,12 +446,14 @@ def main():
         elif event == 'sieve graph':  # display info about value at coords
             # find coordinate boundaries
             column_width = len(str(values['sieve input'])) + 2
-            x_coord = (int(values[event][0]) - (column_width)) // (column_width * text_height)
+            x_coord = (int(values[event][0]) - (text_height * column_width)) // (column_width * text_height)
+            x_coord_rem = (int(values[event][0]) - (column_width)) % (column_width * text_height)
             y_coord = int(values[event][1]) // (1.5 * text_height)
+            y_coord_rem = int(values[event][1]) % (1.5 * text_height)
             print(column_width * text_height)
-            print(x_coord, y_coord)
-            # number = sieve_value_coord.keys((x_coord, y_coord))
-            window['sieve value display'].update(value=str(values['sieve graph']))
+            print(f'column, row: ({x_coord}, {y_coord}),  remainders: ({x_coord_rem}, {y_coord_rem})')
+            update_text = f'column, row: ({x_coord}, {y_coord}),  remainders: ({x_coord_rem}, {y_coord_rem})'
+            window['sieve value display'].update(value=f'column, row: ({x_coord}, {y_coord}),  remainders: ({x_coord_rem}, {y_coord_rem})')
 
         if animate_sieve:
             print('[LOG] Animation Pass')
