@@ -15,6 +15,16 @@ class SieveGraphObject:
         top_right = (
             self.coord[0] + len(str(self.value)) * (char_size / 2), self.coord[1] - (char_size / 2) - 1)
         return bottom_left, top_right
+    
+    def full_hitbox(self, xoffset: int = 0, yoffset: int = 0, offset: None | int = None):
+        if offset is not None:
+            xoffset = offset
+            yoffset = offset
+        bottom_left = (self.hitbox[0][0] + xoffset, self.hitbox[0][1] + yoffset)
+        bottom_right = (self.hitbox[1][0] + xoffset, self.hitbox[0][1] + yoffset)
+        top_right = (self.hitbox[1][0] + xoffset, self.hitbox[1][1] + yoffset)
+        top_left = (self.hitbox[0][0] + xoffset, self.hitbox[1][1] + yoffset)
+        return bottom_left, bottom_right, top_right, top_left
 
     def is_hit(self, click: (float, float)):
         dx = abs(click[0] - self.coord[0])

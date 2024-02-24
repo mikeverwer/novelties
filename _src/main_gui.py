@@ -60,7 +60,7 @@ def pt_to_px(pt: int):
     return round((pt / 72) * 96)
 
 
-def sieve_animation(window, values, steps=None, em: int = 16):
+def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
     if steps is None:
         steps = {'find coordinates': False,
                  'draw numbers': False,
@@ -80,15 +80,16 @@ def sieve_animation(window, values, steps=None, em: int = 16):
 
     def make_coords(largest: int):
         global sieve_value_objects
-        column_width = len(str(largest)) + 2
-        number_of_columns = 900 // (column_width * em)
+        column_chars = len(str(largest)) + 1  # was + 2
+        pixel_width = column_chars * em
+        number_of_columns = (950 // pixel_width)
         # rows = (largest // number_of_columns) + 1
         numbers = [i for i in range(2, largest + 1)]
 
         for index, number in enumerate(numbers):
             row = index // number_of_columns + 1
             column = index % number_of_columns + 1
-            coords = (column * (column_width * em), row * 1.5 * em)
+            coords = (column * pixel_width, row * 1.5 * em)
             value_object = gv.SieveGraphObject(value=number, coord=coords, row=row, column=column, is_prime=True,
                                                factors=[], hitbox=None)
             value_object.hitbox = value_object.make_hitbox(em)
@@ -136,10 +137,7 @@ def sieve_animation(window, values, steps=None, em: int = 16):
         box_colour = sieve_animation_steps['prime colour']
 
         # get geometry
-        bottom_left = thing.hitbox[0]  # obj.hitbox = (tuple1, tuple2) where each tuple is (x, y); tuple1 is bottom_left, tuple2 is top_right
-        bottom_right = (thing.hitbox[1][0], thing.hitbox[0][1])
-        top_right = thing.hitbox[1]
-        top_left = (thing.hitbox[0][0], thing.hitbox[1][1])
+        bottom_left, bottom_right, top_right, top_left = thing.full_hitbox()
 
         # draw
         graph.draw_line(bottom_left, bottom_right, box_colour, width=2)
@@ -147,18 +145,39 @@ def sieve_animation(window, values, steps=None, em: int = 16):
         graph.draw_line(top_right, top_left, box_colour, width=2)
         graph.draw_line(top_right, bottom_right, box_colour, width=2)
 
+    def draw_outline(word, outline_colour=sieve_animation_steps['prime colour']):
+        # get geometry.
+        # bottom_left, bottom_right, top_right, top_left = word.full_hitbox(offset=1)
+        corners = word.full_hitbox(offset=1)
+        vdash_length = abs(word.hitbox[0][1] - word.hitbox[1][1]) / 3
+        hdash_length = abs(word.hitbox[0][0] - word.hitbox[1][0]) / 3
+        ids = []
+
+        for i, corner in enumerate(corners):
+            vsign = -1 if i == 0 or i == 1 else 1
+            hsign = 1 if i % 4 == 0 or i % 4 == 3 else -1
+            vdash = (corner, (corner[0], corner[1] + vsign * vdash_length))
+            hdash = (corner, (corner[0] + hsign * hdash_length, corner[1]))
+            v_id = graph.draw_line(vdash[0], vdash[1], outline_colour)
+            h_id = graph.draw_line(hdash[0], hdash[1], outline_colour)
+            ids.append(v_id)
+            ids.append(h_id)
+
+        return ids
+
     def draw_scratch(word, line_colour=sieve_animation_steps['prime colour']):
         # find draw height
         center = word.coord
-        length = len(str(word.value)) * em - (em * len(str(word.value)) % 2)
+        pixel_width = len(str(word.value)) * em
+        length = pixel_width - (pixel_width % 3)
         bump = 2  # (em / 6) + 1 decent approximation?
         # generate the sequence: [0, bump, -bump, 2bump, -2bump, ..., nbump, -nbump] where nbump < em / 2
         # sequence is used to handle the gap becoming too large, so we cycle through the sequence in that case
         h_offsets = [(((-1) ** (i - 1)) * (bump * ((i + 1) // 2))) for i in range((int(em) + 1) // 2)]  #
         h_offset = h_offsets[(len(primes_so_far) - 1) % len(h_offsets)]
         height = center[1] + h_offset
-        graph.draw_line((word.coord[0] - (length / 2), height),
-                        (word.coord[0] + (length / 2), height), line_colour, width=2)
+        graph.draw_line((center[0] - (length / 2), height),
+                        (center[0] + (length / 2), height), line_colour, width=2)
 
     if sieve_animation_steps['find coordinates']:
         max_sieve = int(values['sieve input'])
@@ -197,6 +216,7 @@ def sieve_animation(window, values, steps=None, em: int = 16):
                     sieve_animation_steps['hurry up'] = True if choice == 'Yes, please' else False
                     if choice == 'Yes, please.':
                         sieve_animation_steps['hurry up'] = True
+                        animation_speed_sieve = 50
                     elif choice == 'No, thanks.':
                         sieve_animation_steps['hurry up'] = False
                     print(f"user chose: {choice}  :  hurry up = {sieve_animation_steps['hurry up']}")
@@ -234,13 +254,15 @@ def sieve_animation(window, values, steps=None, em: int = 16):
 
     elif sieve_animation_steps['scratch multiple']:
         prime_value = primes_so_far[-1]
-        # choose colour
-        colour = colours_list[(prime_value * 100) % len(colours_list)]
         # find number to scratch
         scratch = (int(prime_value) ** 2) + (scratch_animation_passes * int(prime_value))
         scratch_obj = sieve_value_objects[scratch - 2]
         if scratch <= int(values['sieve input']):
             print(f"[LOG] Scratch Multiple: {scratch}")
+            if outline_ids is not None:  # remove previous outline outline
+                for outline_id in outline_ids:
+                    graph.delete_figure(outline_id)
+            outline_ids = draw_outline(scratch_obj)  # draw outline
             scratch_obj.is_prime = False
             scratch_obj.factors.append(prime_value)
             draw_scratch(scratch_obj)
@@ -273,6 +295,8 @@ def sieve_animation(window, values, steps=None, em: int = 16):
         sieve_animation_steps['hurry up'] = False
         sieve_animation_steps['finished'] = True
 
+    return outline_ids
+
 
 def main():
     window = mk.make_window(sg.theme(), sieve_graph_x, sieve_graph_y)
@@ -282,6 +306,7 @@ def main():
     global primes_so_far
     global sieve_font
     text_height = pt_to_px(int(sieve_font[-2:]))
+    outline_ids = None
 
     # This is an Event Loop
     while True:
@@ -317,6 +342,7 @@ def main():
                 if rows <= (sieve_graph_y // text_height) + text_height:  # enough rows
                     window['found primes'].update(value='None')
                     sieve_graph.erase()
+                    outline_ids = None
                     sieve_animation_steps['finished'] = False
                     animate_sieve = True
                     sieve_animation_steps['find coordinates'] = True
@@ -368,7 +394,7 @@ def main():
 
         if animate_sieve:
             print('[LOG] Animation Pass')
-            sieve_animation(window, values, dict, em=text_height)
+            outline_ids = sieve_animation(window, values, dict, text_height, outline_ids)
             # sieve_animation.sieve_animation(window, values, )
             if sieve_animation_steps['finished']:
                 animate_sieve = False
