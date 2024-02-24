@@ -57,7 +57,7 @@ def dict_colours():
         'CadetBlue3': '#7AC5CD',
         'CadetBlue4': '#53868B',
         '#E30022': '#E30022',
-        '#E31700': '#E31700',
+        '#9B8973': '#9B8973',
         'chartreuse': '#7FFF00',
         'chartreuse1': '#7FFF00',
         'chartreuse2': '#76EE00',

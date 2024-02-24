@@ -19,7 +19,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
                          sg.Button('Show', key='generate novelties')],
                         [sg.Pane([
                             sg.Col([[sg.T('Largest Known Prime: ##')],
-                                    [sg.Text('primes list:'), sg.T(primes_for_display)],
+                                    [sg.Text('primes list:')], [sg.T(primes_for_display)],
                                     ]),
                             sg.Column(
                                 layout=[
@@ -36,33 +36,47 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
     ]
 
     sieve_layout = [
-        [sg.Text('The Sieve of Eratosthenes', font=('Helvetica', 18, 'bold'))],
-        [sg.Text('To which number shall we search?', font=('Helvetica', 16))],
+        [sg.Column(layout=[
+                [sg.Text('The Sieve of Eratosthenes', font=('Helvetica', 18, 'bold'))],
+                [sg.Text('To which number shall we search?', font=('Helvetica', 16))]]), sg.T('', s=(16, 1)),
+            sg.Column(layout=[
+            [sg.Frame(layout=[[sg.T('Values:        \nPrime Factors: ', k='sieve value display',
+                                    font='Helvetica 14 bold', background_color='lavender', text_color='black')]],
+                      title='', background_color='lavender', )],
+            ])
+        ]
+    ]
+
+    sieve_layout += [[sg.Column(layout=[
         [sg.T(''), sg.Input(key='sieve input', size=(10, 1), default_text='200'),
          sg.Button('  Begin  ', font='bold', key='go-sieve', button_color='sea green'),
          sg.Button('Clear', font='bold', k='clear sieve', button_color='firebrick3'),
          sg.Button('Pause/Play', font='bold', k='pause sieve', button_color='gray50'),
-         sg.T('    Set Speed: ', font='Helvetica 14'),
+         sg.T('', s=(2, 1)), sg.T('    Set Speed: ', font='Helvetica 14'),
          sg.Button('0.25x', k='sieve_speed:0.25'), sg.Button('0.5x ', k='sieve_speed:0.5'),
          sg.Button('  1x  ', k='sieve_speed:1'), sg.Button('  2x  ', k='sieve_speed:2'),
          sg.Button('  4x  ', k='sieve_speed:4'), sg.Button('  8x  ', k='sieve_speed:8'),
-         sg.T('    Size:', font='Helvetica 14'),
-         sg.DropDown((10, 12, 14, 16, 18), default_value=14, k='sieve_font', enable_events=True, readonly=True),
-         sg.Stretch(), sg.T('', k='sieve value display', font='Helvetica 14 bold')
-         ],
-        [sg.Column(
+         sg.T('', s=(2, 1)), sg.T('    Size:', font='Helvetica 14'),
+         sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=14, k='sieve_font',
+                     enable_events=True, readonly=True),
+         ]
+    ]),
+    ],
+    ]
+
+    sieve_layout += [[sg.Column(
+        layout=[
+            [sg.Stretch(), *sieve_graph_layout, sg.Stretch()]
+        ],
+        scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x, 500), key='sieve column', expand_y=True),
+        sg.Column(
             layout=[
-                [sg.Stretch(), *sieve_graph_layout, sg.Stretch()]
+                [sg.Text('Primes found so far:', font='Helvetica 16'), sg.T('')],
+                [sg.Text(uprint.column_print(primes_so_far, 5, string=True), key='found primes',
+                         font='Courier 12 bold', expand_x=True, size=(200, 100))]
             ],
-            scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x, 500), key='sieve column', expand_y=True),
-            sg.Column(
-                layout=[
-                    [sg.Text('Primes found so far:', font='Helvetica 16'), sg.T('')],
-                    [sg.Text(uprint.column_print(primes_so_far, 5, string=True), key='found primes',
-                             font='Courier 12 bold', expand_x=True, size=(200, 100))]
-                ],
-                expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(215, 500))
-        ]
+            expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(215, 500))
+    ]
     ]
 
     log_layout = [
@@ -78,8 +92,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
                            sg.Button('Test Progress bar')]]
 
     layout = [[sg.MenubarCustom(menu_def, key='-MENU-', font='Courier 15', tearoff=True)],
-              [sg.Stretch(), sg.Text('All Things Prime', size=(38, 1), justification='center', font=("Helvetica", 16),
-                                     relief=sg.RELIEF_RIDGE, k='-TEXT HEADING-', enable_events=True), sg.Stretch()]]
+              ]
 
     layout += [[sg.TabGroup([[sg.Tab('Sieve', sieve_layout),
                               sg.Tab('progress bar', placeholder_layout),
@@ -95,4 +108,3 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
                        finalize=True, keep_on_top=True)
     window.set_min_size(window.size)
     return window
-

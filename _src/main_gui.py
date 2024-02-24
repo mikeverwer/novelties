@@ -362,7 +362,7 @@ def main():
             click_y = float(values[event][1])
             for value_object in sieve_value_objects:
                 if value_object.is_hit((click_x, click_y)):
-                    update_text = f'Value: {value_object.value:<}\nPrime Factors: {value_object.factors}'
+                    update_text = f'Values:               {value_object.value:<}\nPrime Factors: {value_object.factors}'
                     print(f'[LOG] ' + update_text)
                     window['sieve value display'].update(value=update_text)
 
