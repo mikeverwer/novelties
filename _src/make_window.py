@@ -34,34 +34,46 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
         sg.Graph((sieve_graph_x, sieve_graph_y), (0, sieve_graph_y), (sieve_graph_x, 0),
                  background_color='lavender', key='sieve graph', expand_y=True, enable_events=True)  # colour AliceBlue
     ]
-
-    sieve_layout = [
-        [sg.Column(layout=[
-                [sg.Text('The Sieve of Eratosthenes', font=('Helvetica', 18, 'bold'))],
-                [sg.Text('To which number shall we search?', font=('Helvetica', 16))]]), sg.T('', s=(16, 1)),
-            sg.Column(layout=[
-            [sg.Frame(layout=[[sg.T('Values:        \nPrime Factors: ', k='sieve value display',
-                                    font='Helvetica 14 bold', background_color='lavender', text_color='black')]],
-                      title='', background_color='lavender', )],
-            ])
-        ]
+    
+    sieve_size_selection_layout = [
+        [sg.T('Text Size ', font='Helvetica 10 bold')], 
+        [sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=14, k='sieve font', enable_events=True, readonly=True)],
+        [sg.T('')]
+    ]
+    
+    sieve_interact_display_frame = sg.Frame(layout=[
+            [sg.T('Values:        \nPrime Factors: ', k='sieve value display', font='Helvetica 14 bold', background_color='lavender', text_color='black')]],
+                title='', background_color='lavender', )
+    
+    
+    tick_positions = ['1/4', '1/2', '1', '2', '4', '8', '16', ' 32']
+    speed_slider_layout = [
+        [sg.Text("Set Animation Speed:", font='Helvetica 10 bold')],
+        [sg.Slider(range=(0.25, 7), orientation="h", size=(35, 20), default_value=2, key="sieve speed", enable_events=True, disable_number_display=True)],
+        [sg.Text(f"{tick_positions[i]}x".ljust(5)) for i in range(len(tick_positions))],
     ]
 
-    sieve_layout += [[sg.Column(layout=[
+
+    sieve_in_go_clear_pause_layout = [
+        [sg.Text('  To which number shall we search?', font=('Helvetica', 16))],
         [sg.T(''), sg.Input(key='sieve input', size=(10, 1), default_text='200'),
          sg.Button('  Begin  ', font='bold', key='go-sieve', button_color='sea green'),
          sg.Button('Clear', font='bold', k='clear sieve', button_color='firebrick3'),
          sg.Button('Pause/Play', font='bold', k='pause sieve', button_color='gray50'),
-         sg.T('', s=(2, 1)), sg.T('    Set Speed: ', font='Helvetica 14'),
-         sg.Button('0.25x', k='sieve_speed:0.25'), sg.Button('0.5x ', k='sieve_speed:0.5'),
-         sg.Button('  1x  ', k='sieve_speed:1'), sg.Button('  2x  ', k='sieve_speed:2'),
-         sg.Button('  4x  ', k='sieve_speed:4'), sg.Button('  8x  ', k='sieve_speed:8'),
-         sg.T('', s=(2, 1)), sg.T('    Size:', font='Helvetica 14'),
-         sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=14, k='sieve_font',
-                     enable_events=True, readonly=True),
-         ]
-    ]),
-    ],
+        ]
+    ]
+
+    sieve_layout = [
+        [sg.Text('The Sieve of Eratosthenes', font=('Helvetica', 18, 'bold')), sg.T('', s=(7, 1)), sieve_interact_display_frame
+        ]
+    ]
+
+    sieve_layout += [
+        [sg.Column(layout=sieve_in_go_clear_pause_layout), sg.T('', s=(1, 1)),
+         sg.Column(layout=speed_slider_layout), sg.T('', s=(1, 1)),
+         sg.Column(layout=sieve_size_selection_layout), sg.T('', s=(1, 1)),
+        ],
+        
     ]
 
     sieve_layout += [[sg.Column(

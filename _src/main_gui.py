@@ -31,9 +31,10 @@ animate_sieve = False
 primes_so_far = ['None']
 scratch_animation_passes = int
 animation_speed_sieve = 1
+sieve_speed_ticks = ['1/4', '1/2', '1', '2', '4', '8', '16', '32']
 
 
-def reset_globals():
+def reset_globals(speed=None):
     global update_interval
     global animation_speed_sieve
     global sieve_animation_steps
@@ -53,7 +54,7 @@ def reset_globals():
     primes_so_far = []
     update_interval = 1
     scratch_animation_passes = 0
-    animation_speed_sieve = 1
+    animation_speed_sieve = speed if speed is not None else 1
 
 
 def pt_to_px(pt: int):
@@ -77,6 +78,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
     global primes_so_far
     global scratch_animation_passes
     global sieve_value_objects
+    global sieve_speed_ticks
 
     def make_coords(largest: int):
         global sieve_value_objects
@@ -115,7 +117,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
             return luminance > brightness_threshold
 
         # colour_name = random.choice(colours_list)  # colour is random each run
-        colour_name = colours_list[(int(seed) * 97) % len(colours_list)]  # colour tied to prime
+        colour_name = colours_list[(int(seed) * 97) % len(colours_list)]  # colour tied to prime, first try
         colour_hex = colours_dict[colour_name]
         attempts = 1  # ensure the colour is "appropriate"
         print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
@@ -125,7 +127,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
             colour_name = colours_list[(int(seed) ** (attempts * 2)) % len(colours_list)]  # colour tied to prime
             colour_hex = colours_dict[colour_name]
             print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
-            if attempts > 5:  # limit attempts
+            if attempts > 5:  # limit attempts to break out of cyclic subgroups
                 colour_name = random.choice(colours_list)  # colour is random each run
                 colour_hex = colours_dict[colour_name]
 
@@ -179,6 +181,11 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
         graph.draw_line((center[0] - (length / 2), height),
                         (center[0] + (length / 2), height), line_colour, width=2)
 
+    speed_index = int(values['sieve speed'])
+    animation_speed_sieve = float(eval(sieve_speed_ticks[speed_index]))
+    print(f"current speed: {animation_speed_sieve}, update_interval: {update_interval}")
+    # these are the steps of the animation: 
+    # 1) Build co-ordinate system -> 2) draw numbers at each co-ordinate node -> 3) find prime and draw box -> 4) scratch out multiples -> Repeat from 3 until complete
     if sieve_animation_steps['find coordinates']:
         max_sieve = int(values['sieve input'])
         make_coords(max_sieve)
@@ -203,7 +210,6 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
         # find prime
         next_prime_index = next((index for index, obj in enumerate(sieve_value_objects) if obj.is_prime), None)
         prime_obj = None if next_prime_index is None else sieve_value_objects[next_prime_index]
-        print(prime_obj)
 
         if prime_obj is not None:
             prime_value = prime_obj.value
@@ -234,6 +240,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
                     sieve_animation_steps['scratch multiple'] = True
                     scratch_animation_passes = 0
                     update_interval = 1 * animation_speed_sieve  # set speed for next phase
+                    print(f"[LOG] Update Interval set to: {update_interval}, speed was set at: {animation_speed_sieve}")
                 elif sieve_animation_steps['hurry up']:  # scratching is done
                     print(f"[LOG] hurry up")
                     sieve_animation_steps['box prime'] = False  # finish quickly
@@ -254,8 +261,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
 
     elif sieve_animation_steps['scratch multiple']:
         prime_value = primes_so_far[-1]
-        # find number to scratch
-        scratch = (int(prime_value) ** 2) + (scratch_animation_passes * int(prime_value))
+        scratch = (int(prime_value) ** 2) + (scratch_animation_passes * int(prime_value))  # find number to scratch
         scratch_obj = sieve_value_objects[scratch - 2]
         if scratch <= int(values['sieve input']):
             print(f"[LOG] Scratch Multiple: {scratch}")
@@ -271,7 +277,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
             if scratch + int(prime_value) <= int(values['sieve input']):  # scratch another
                 sieve_animation_steps['scratch multiple'] = True
                 scratch_animation_passes += 1
-                update_interval = 75 * animation_speed_sieve
+                update_interval = 5 * animation_speed_sieve
             else:
                 sieve_animation_steps['scratch multiple'] = False  # move to next prime
                 sieve_animation_steps['box prime'] = True
@@ -305,6 +311,7 @@ def main():
     global animation_speed_sieve
     global primes_so_far
     global sieve_font
+    global sieve_speed_ticks
     text_height = pt_to_px(int(sieve_font[-2:]))
     outline_ids = None
 
@@ -337,7 +344,7 @@ def main():
                 columns = 900 // (sieve_column_width * text_height)
                 rows = (max_sieve // columns) + 1
                 primes_so_far = []
-                reset_globals()
+                reset_globals(speed=values['sieve speed'])
                 # check graph size, remake if too small
                 if rows <= (sieve_graph_y // text_height) + text_height:  # enough rows
                     window['found primes'].update(value='None')
@@ -359,14 +366,19 @@ def main():
             except ValueError:
                 pass
 
-        elif event.startswith('sieve_speed:'):
-            speed = event.split(':')[1]
-            animation_speed_sieve = float(speed)
+        elif event == 'sieve speed':
+            speed_index = int(values[event])
+            animation_speed_sieve = float(eval(sieve_speed_ticks[speed_index]))
+            print(f"[LOG] Changed Sieve Speed. Slider value: {values[event]}.  Animation speed: {animation_speed_sieve}")
+            # print(speed)
+           #  animation_speed_sieve = float(speed)
+           #  window[event].update(values[event])
 
-        elif event == 'sieve_font':
+        elif event == 'sieve font':
             print("[LOG] Clicked Font Size")
             sieve_font = 'Courier ' + str(values[event])
             text_height = pt_to_px(values[event])  # calculate text size in pixels
+            window[event].update(values[event])
 
         elif event == 'pause sieve':
             print("[LOG] Clicked Pause/Play")
@@ -377,6 +389,7 @@ def main():
             animate_sieve = False
             window['found primes'].update(value='None')
             sieve_graph.erase()
+            reset_globals()
 
         elif event == 'OK':
             print("[LOG] Rebuild the window.")

@@ -668,6 +668,7 @@ def list_colour_names():
 
 def main():
     color_map = dict_colours()
+    print(f"length of list: {len(list_colour_names())}")
 
     sg.popup_quick_message('Building your table... one moment please...', background_color='red', text_color='white', font='_ 20')
 
