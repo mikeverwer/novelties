@@ -74,7 +74,7 @@ def generate_up_to(max_value, display=False):
 
     the_novelties = ['e']
     for i in range(2, max_value + 1):
-        novelty = generate_single(i, False)
+        novelty = generate_single(i)
         # check for frauds
 
         the_novelties.append(novelty)
