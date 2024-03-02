@@ -43,16 +43,19 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
         [sg.T('')]
     ]
     
+    fbc = 'lavender'  # frame background colour
     sieve_interact_display_frame = sg.Frame(layout=[
-            [sg.T('Value:         \nPrime Factors: ', k='sieve value display', font='Helvetica 14 bold', background_color='lavender', text_color='black')]],
-                title='', background_color='lavender', )
+            [sg.T('Value:'.ljust(20), k='sieve clicked value', font='Helvetica 14 bold', background_color=fbc, text_color='black')],
+            [sg.T('Prime Factors:'.ljust(20), k='sieve clicked primes', font='Helvetica 14 bold', background_color=fbc, text_color='black')]
+            ],
+                title='', background_color='lavender', relief='solid', vertical_alignment='bottom')
     
     
     tick_positions = ['1/4', '1/2', '1', '2', '4', '8', '16', ' 32']
     speed_slider_layout = [
         [sg.Text("Set Animation Speed:", font='Helvetica 10 bold')],
-        [sg.Slider(range=(0.25, 7), orientation="h", size=(39, 20), default_value=2, key="sieve speed", enable_events=True, disable_number_display=True)],
-        [sg.Text(f"{tick_positions[i]}x".center(6), background_color='lavender', text_color='black') for i in range(len(tick_positions))],
+        [sg.Slider(range=(0.25, 7), orientation="h", size=(32, 20), default_value=2, key="sieve speed", enable_events=True, disable_number_display=True)],  # 4, 32
+        [sg.Text(f"{tick_positions[i]}x".center(4), background_color='lavender', text_color='black') for i in range(len(tick_positions))],
     ]
 
 

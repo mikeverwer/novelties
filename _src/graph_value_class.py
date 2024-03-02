@@ -1,5 +1,5 @@
 class SieveGraphObject:
-    def __init__(self, value, coord, row: int, column: int, is_prime: bool, factors: list,
+    def __init__(self, value: int | float, coord: tuple | list, row: int, column: int, is_prime: bool, factors: list, colours: list,
                  hitbox):
         self.value = value
         self.coord = coord
@@ -7,6 +7,7 @@ class SieveGraphObject:
         self.column = column
         self.is_prime = is_prime
         self.factors = factors
+        self.colours = colours
         self.hitbox = hitbox
 
     def make_hitbox(self, char_size):

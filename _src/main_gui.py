@@ -2,12 +2,12 @@ import generate_novelties
 import sieve_of_eratosthenes as soe
 import usefull_prints as uprint
 import make_window as mk
+import graph_value_class as gv
 import colours
 # import sieve_animation
 import PySimpleGUI as sg
 import time
 import random
-import graph_value_class as gv
 
 colours_list = colours.list_colour_names()
 colours_dict = colours.dict_colours()
@@ -93,14 +93,14 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
             column = index % number_of_columns + 1
             coords = (column * pixel_width, row * 1.5 * em)
             value_object = gv.SieveGraphObject(value=number, coord=coords, row=row, column=column, is_prime=True,
-                                               factors=[], hitbox=None)
+                                               factors=[], colours=[], hitbox=None)
             value_object.hitbox = value_object.make_hitbox(em)
             sieve_value_objects.append(value_object)
 
     def choose_colour(seed):
 
         def is_bright_color(hex_code):
-            # Convert hex code to RGB values
+            # Convert hex code to RGB values, normalized to 1
             r = int(hex_code[1:3], 16) / 255.0
             g = int(hex_code[3:5], 16) / 255.0
             b = int(hex_code[5:7], 16) / 255.0
@@ -109,7 +109,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
             luminance = (0.2126 * r) + (0.587 * g) + (0.0722 * b)
 
             # Define a threshold for brightness (higher = more colour diversity, but poorer visibility)
-            brightness_threshold = 0.45
+            brightness_threshold = 0.53
 
             print(luminance)
 
@@ -137,6 +137,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
         # choose colour
         sieve_animation_steps['prime colour'] = choose_colour(thing.value)
         box_colour = sieve_animation_steps['prime colour']
+        thing.colours.append(box_colour)
 
         # get geometry
         bottom_left, bottom_right, top_right, top_left = thing.full_hitbox()
@@ -170,6 +171,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
     def draw_scratch(word, line_colour=sieve_animation_steps['prime colour']):
         # find draw height
         center = word.coord
+        word.colours.append(line_colour)
         pixel_width = len(str(word.value)) * em
         length = pixel_width - (pixel_width % 3)
         bump = 2  # (em / 6) + 1 decent approximation?
@@ -407,9 +409,15 @@ def main():
                     bottom_right = (value_object.hitbox[1][0] + 4, value_object.hitbox[0][1] + 3)
                     top_left = (value_object.hitbox[0][0] - 4, value_object.hitbox[1][1] - 3)
                     sieve_selection_box = sieve_graph.draw_rectangle(bottom_right, top_left, line_color='magenta')
-                    update_text = f"{'Values':<{20}}" + f'{value_object.value:<}\nPrime Factors: {value_object.factors}'
-                    print(f'[LOG] ' + update_text)
-                    window['sieve value display'].update(value=update_text)
+                    update_text = f"{'Value:':<{23}}" + f'{value_object.value:<}'
+                    window['sieve clicked value'].update(value=update_text)
+                    if value_object.value in primes_so_far:
+                        update_text = f"{'Colour:':<{19}}" + value_object.colours[0]
+                        window['sieve clicked primes'].update(value=update_text)
+                    else:
+                        update_text = f"{'Prime Factors:':<{15}}" + str(value_object.factors) if value_object.factors is not None else f"{'Prime Factors:':<{20}}"
+                        window['sieve clicked primes'].update(value=update_text)
+
 
         if animate_sieve:
             print('[LOG] Animation Pass')
