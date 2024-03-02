@@ -1,6 +1,6 @@
 class SieveGraphObject:
-    def __init__(self, value, coord: (float, float), row: int, column: int, is_prime: bool, factors: list,
-                 hitbox: (float, float) = None):
+    def __init__(self, value, coord, row: int, column: int, is_prime: bool, factors: list,
+                 hitbox):
         self.value = value
         self.coord = coord
         self.row = row
@@ -11,7 +11,7 @@ class SieveGraphObject:
 
     def make_hitbox(self, char_size):
         bottom_left = (
-            self.coord[0] - len(str(self.value)) * (char_size / 2), self.coord[1] + (char_size / 2) - 1)
+            self.coord[0] - len(str(self.value)) * (char_size / 2) , self.coord[1] + (char_size / 2) - 1)
         top_right = (
             self.coord[0] + len(str(self.value)) * (char_size / 2), self.coord[1] - (char_size / 2) - 1)
         return bottom_left, top_right
@@ -20,18 +20,22 @@ class SieveGraphObject:
         if offset is not None:
             xoffset = offset
             yoffset = offset
-        bottom_left = (self.hitbox[0][0] + xoffset, self.hitbox[0][1] + yoffset)
+        bottom_left = (self.hitbox[0][0] - xoffset, self.hitbox[0][1] + yoffset)
         bottom_right = (self.hitbox[1][0] + xoffset, self.hitbox[0][1] + yoffset)
-        top_right = (self.hitbox[1][0] + xoffset, self.hitbox[1][1] + yoffset)
-        top_left = (self.hitbox[0][0] + xoffset, self.hitbox[1][1] + yoffset)
+        top_right = (self.hitbox[1][0] + xoffset, self.hitbox[1][1] - yoffset)
+        top_left = (self.hitbox[0][0] - xoffset, self.hitbox[1][1] - yoffset)
         return bottom_left, bottom_right, top_right, top_left
+        
 
-    def is_hit(self, click: (float, float)):
+    def is_hit(self, click, xoffset: int = 0, yoffset: int = 0, offset: None | int = None):
+        if offset is not None:
+            xoffset = offset
+            yoffset = offset
         dx = abs(click[0] - self.coord[0])
         dy = abs(click[1] - self.coord[1])
         half_length = abs(self.hitbox[0][0] - self.hitbox[1][0]) / 2
         half_height = abs(self.hitbox[0][1] - self.hitbox[1][1]) / 2
-        if dx - half_length <= 0 and dy - half_height <= 0:
+        if dx - half_length <= xoffset and dy - half_height <= yoffset:
             return True
         else:
             return False

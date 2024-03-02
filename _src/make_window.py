@@ -14,6 +14,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
         enable_events=False),
     ]
 
+# Beginning of Novelties Layout
     novelties_layout = [[sg.Text("Enter the largest natural number to reach: ")],
                         [sg.Input(key='max novelty', size=(10, 1), default_text='250'),
                          sg.Button('Show', key='generate novelties')],
@@ -29,7 +30,8 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
                                 expand_y=True),
                         ], size=(50, 200), orientation='h', expand_y=True, expand_x=True)],
                         ]
-
+    
+# Beginning of Sieve Layout
     sieve_graph_layout = [
         sg.Graph((sieve_graph_x, sieve_graph_y), (0, sieve_graph_y), (sieve_graph_x, 0),
                  background_color='lavender', key='sieve graph', expand_y=True, enable_events=True)  # colour AliceBlue
@@ -42,15 +44,15 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
     ]
     
     sieve_interact_display_frame = sg.Frame(layout=[
-            [sg.T('Values:        \nPrime Factors: ', k='sieve value display', font='Helvetica 14 bold', background_color='lavender', text_color='black')]],
+            [sg.T('Value:         \nPrime Factors: ', k='sieve value display', font='Helvetica 14 bold', background_color='lavender', text_color='black')]],
                 title='', background_color='lavender', )
     
     
     tick_positions = ['1/4', '1/2', '1', '2', '4', '8', '16', ' 32']
     speed_slider_layout = [
         [sg.Text("Set Animation Speed:", font='Helvetica 10 bold')],
-        [sg.Slider(range=(0.25, 7), orientation="h", size=(35, 20), default_value=2, key="sieve speed", enable_events=True, disable_number_display=True)],
-        [sg.Text(f"{tick_positions[i]}x".ljust(5)) for i in range(len(tick_positions))],
+        [sg.Slider(range=(0.25, 7), orientation="h", size=(39, 20), default_value=2, key="sieve speed", enable_events=True, disable_number_display=True)],
+        [sg.Text(f"{tick_positions[i]}x".center(6), background_color='lavender', text_color='black') for i in range(len(tick_positions))],
     ]
 
 
@@ -89,7 +91,8 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
             ],
             expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(215, 500))
     ]
-    ]
+    ]  
+    # End of sieve layout
 
     log_layout = [
         [sg.Text('Log:', font='Helvetica 16')],

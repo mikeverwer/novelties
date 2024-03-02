@@ -108,8 +108,8 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
             # Calculate luminance
             luminance = (0.2126 * r) + (0.587 * g) + (0.0722 * b)
 
-            # Define a threshold for brightness (adjust as needed)
-            brightness_threshold = 0.55
+            # Define a threshold for brightness (higher = more colour diversity, but poorer visibility)
+            brightness_threshold = 0.45
 
             print(luminance)
 
@@ -150,7 +150,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
     def draw_outline(word, outline_colour=sieve_animation_steps['prime colour']):
         # get geometry.
         # bottom_left, bottom_right, top_right, top_left = word.full_hitbox(offset=1)
-        corners = word.full_hitbox(offset=1)
+        corners = word.full_hitbox(offset=2)
         vdash_length = abs(word.hitbox[0][1] - word.hitbox[1][1]) / 3
         hdash_length = abs(word.hitbox[0][0] - word.hitbox[1][0]) / 3
         ids = []
@@ -314,6 +314,7 @@ def main():
     global sieve_speed_ticks
     text_height = pt_to_px(int(sieve_font[-2:]))
     outline_ids = None
+    sieve_selection_box = None
 
     # This is an Event Loop
     while True:
@@ -397,11 +398,16 @@ def main():
             window = mk.make_window(sg.theme(), sieve_graph_y=sieve_graph_y)
 
         elif event == 'sieve graph':  # display info about value at coords
+            if sieve_selection_box is not None:
+                sieve_graph.delete_figure(sieve_selection_box)
             click_x = float(values[event][0])
             click_y = float(values[event][1])
             for value_object in sieve_value_objects:
-                if value_object.is_hit((click_x, click_y)):
-                    update_text = f'Values:               {value_object.value:<}\nPrime Factors: {value_object.factors}'
+                if value_object.is_hit((click_x, click_y), xoffset=4, yoffset=3):
+                    bottom_right = (value_object.hitbox[1][0] + 4, value_object.hitbox[0][1] + 3)
+                    top_left = (value_object.hitbox[0][0] - 4, value_object.hitbox[1][1] - 3)
+                    sieve_selection_box = sieve_graph.draw_rectangle(bottom_right, top_left, line_color='magenta')
+                    update_text = f"{'Values':<{20}}" + f'{value_object.value:<}\nPrime Factors: {value_object.factors}'
                     print(f'[LOG] ' + update_text)
                     window['sieve value display'].update(value=update_text)
 
