@@ -1,5 +1,5 @@
 import usefull_prints as uprint
-from main_gui import sg, primes_so_far, primes_for_display
+from main_gui import sg, primes_so_far
 
 
 def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelty_graph_x=1000, novelty_graph_y=1000):
@@ -16,27 +16,24 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
 
     novelty_graph_column = sg.Column(layout=[
             [sg.Stretch(), *novelty_graph_layout, sg.Stretch()]
-        ], scrollable=True, size=(novelty_graph_x, 500), key='novelty column', expand_y=True
+        ], scrollable=True, size=(novelty_graph_x, 500), key='novelty column', expand_y=True, expand_x=True
     )
     
     conversion_chart_column = sg.Column(layout=[
-            [sg.T('Largest Known Prime: ##')],
-            [sg.Text('Ordinal to Prime Conversion Chart:')], [sg.T(primes_for_display, key='conversion chart')],
-        ], expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(215, 500)
+            [sg.Text('Ordinal to Prime Conversion Chart:')], [sg.T('', key='conversion chart', font='Courier 12 bold', s=(250, novelty_graph_y))],
+        ], expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(250, 500)
     )
 
     left_column = sg.Column(layout=[
             [sg.Text(' The Novelties ', font='Helvetica 18 bold', pad=(5,15), relief='raised', border_width=5)],
             [sg.Text("Enter the largest natural number to reach: ")],
-            [sg.Input(key='max novelty', size=(10, 1), default_text='250'), sg.Button('Show', key='generate novelties')],
-            [sg.Pane(
-                [sg.Column([[sg.T('')]]), conversion_chart_column]
-            , orientation='v', relief='flat', size=(215, 500))] 
+            [sg.Input(key='novelty input', size=(10, 1), default_text='250'), sg.Button('Show', key='generate novelties')],
+            [conversion_chart_column] 
         ]
     )
 
     novelties_layout = [
-        [left_column, novelty_graph_column],
+        [left_column, sg.Stretch(), novelty_graph_column],
     ]
     
 # Beginning of Sieve Layout

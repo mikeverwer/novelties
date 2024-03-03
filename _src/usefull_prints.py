@@ -136,7 +136,6 @@ def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff:
                 max(len(str(item)) for item in sublist) if sublist else 0
                 for sublist in lists
             ) if (universal_width is None or universal_width == 0) else 0
-        print("universal width: ", universal_width)
 
     max_list_length = max(len(original_list) for original_list in lists)
     temp_lists = [original_list.copy() for original_list in lists]
@@ -171,17 +170,23 @@ def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff:
     # printing lists
     for temp_list in temp_lists:
         for index, item in enumerate(temp_list, 0):
-            if index == 0 and has_headings:  # handle headings
-                if not headings_every_row and bool(vbars) and recursion:  # recursove pass, add header and vbar?
-                    if give_string:
-                        printable += f"{vbar:>{heading_space + 1}}" + ' '
+            if index == 0:  # handle headings
+                if has_headings:
+                    if not headings_every_row and bool(vbars) and recursion:  # recursive pass, add header and vbar?
+                        if give_string:
+                            printable += f"{vbar:>{heading_space + 1}}" + ' '
+                        else:
+                            print(f"{vbar:>{heading_space + 1}}", end=' ')
                     else:
-                        print(f"{vbar:>{heading_space + 1}}", end=' ')
-                else:
+                        if give_string:
+                            printable += f"{str(item):<{heading_space + 1}}" + ' '
+                        else:
+                            print(f"{str(item):<{heading_space + 1}}", end=' ')
+                else:  # no heading
                     if give_string:
-                        printable += f"{str(item):<{heading_space + 1}}" + ' '
+                        printable += vbar + ' '
                     else:
-                        print(f"{str(item):<{heading_space + 1}}", end=' ')
+                        print(vbar + ' ')
             else:  # regular list item
                 if give_string:
                     printable += f"{str(item):<{column_width}}" + (vbar if vbars == 'full' else '') + ' '
@@ -222,7 +227,7 @@ def main():
 
     # multi_list_print([[str(i) for i in range(1, 101)], [str(i ** 4) for i in range(1, 101)]], ['x', 'x^4'])
 
-    print(multi_list_print([[str(i) for i in range(1, 101)], [str(i ** 4) for i in range(1, 101)]], ['x', 'x^4'], hbars=True, vbars='full', universal_column=True, give_string=True))
+    print(multi_list_print([[str(i) for i in range(1, 101)], [str(i ** 4) for i in range(1, 101)]], hbars=True, vbars='full', universal_column=True, give_string=True))
     # print(printable)
 
 if __name__ == '__main__':

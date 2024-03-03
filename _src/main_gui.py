@@ -18,7 +18,6 @@ sieve_graph_y = 20000
 update_interval = 1
 sieve_font = 'Courier 14'
 
-primes_for_display = uprint.column_print(primes, 10, True)
 sieve_animation_steps = {'find coordinates': False,
                          'draw numbers': False,
                          'box prime': False,
@@ -63,10 +62,20 @@ def pt_to_px(pt: int):
 
 def create_novelties(window, values, steps=None, em: int = 16, ids=None):
     graph = window['novelty graph']
+    max_value = int(values['novelty input'])
+    global primes
     # Steps: 
     # 1) find line height, header width and column width.
     # 2) draw bars
     # 3) draw the text. utf-8 pls.
+    print(f'[LOG]  Largest known prime: {primes[-1]}')
+    primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 \
+        else primes
+    prime_ordinals = [i for i in range(1, len(primes) + 1)]
+    columns = 250 // pt_to_px(len(str(max_value)) + 1)
+    window['conversion chart'].update(value=uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes],
+                            cutoff=5, give_string=True, headings_every_row=False))
+    
 
 
 
@@ -349,6 +358,14 @@ def main():
                     progress_bar.update(current_count=i + 1)
             print("[LOG] Progress bar complete!")
 
+# ----- Novelty Tab -----------------------------------------------------------------------------
+        elif event == 'generate novelties':
+            try:
+                create_novelties(window, values)
+            except ValueError:
+                pass
+
+# ----- Sieve Tab -------------------------------------------------------------------------------
         elif event == 'go-sieve':
             try:
                 max_sieve = int(values['sieve input'])
@@ -427,7 +444,7 @@ def main():
                         update_text = f"{'Prime Factors:':<{15}}" + str(value_object.factors) if value_object.factors is not None else f"{'Prime Factors:':<{20}}"
                         window['sieve clicked primes'].update(value=update_text)
 
-
+# ----- Animations -------------------------------------------------------------------------------
         if animate_sieve:
             print('[LOG] Animation Pass')
             outline_ids = sieve_animation(window, values, dict, text_height, outline_ids)
