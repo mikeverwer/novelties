@@ -62,21 +62,19 @@ def generate_single(value: int):
 def generate_up_to(max_value, display=False):
     global primes
     print(f'largest known prime: {primes[-1]}')
-    primes = primes + soe.sieve_of_eratosthenes(max_value, primes[-1]) if max_value > primes[-1] and max_value > 100 \
+    primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 \
         else primes
     print(primes)
     prime_ordinals = [i for i in range(1, len(primes) + 1)]
     if display:
         print('\nPrime to Prime Ordinal conversion chart:')
-        uprint.multi_list_print([[0] + prime_ordinals, ['\'1\''] + primes],
+        uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes],
                                 ['Ordinal:', 'Prime:'],
-                                cutoff=25, hbars=True, vbars='full', headings_every_row=True, universal_width=True)
+                                cutoff=25)
 
     the_novelties = ['e']
     for i in range(2, max_value + 1):
         novelty = generate_single(i)
-        # check for frauds
-
         the_novelties.append(novelty)
 
     if display:
@@ -85,7 +83,7 @@ def generate_up_to(max_value, display=False):
         # uprint.column_print(the_novelties)
         uprint.multi_list_print([ordinals, the_novelties],
                                 ['Natural:', 'Novelty:'],
-                                cutoff=5, vbars='full', hbars=True, universal_width=True)
+                                cutoff=5)
         print()
 
 

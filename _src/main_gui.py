@@ -61,6 +61,15 @@ def pt_to_px(pt: int):
     return round((pt / 72) * 96)
 
 
+def create_novelties(window, values, steps=None, em: int = 16, ids=None):
+    graph = window['novelty graph']
+    # Steps: 
+    # 1) find line height, header width and column width.
+    # 2) draw bars
+    # 3) draw the text. utf-8 pls.
+
+
+
 def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
     if steps is None:
         steps = {'find coordinates': False,

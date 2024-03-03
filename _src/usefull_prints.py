@@ -30,33 +30,58 @@ def column_print(to_print, items_per_line=10, string=False) -> str | None:
                 print()  # Move to the next line
 
 
-def draw_bars(hbars, hbar, vbars, vbar, row_length, heading_space, column_width, cutoff):
+def draw_bars(hbars, hbar, vbars, vbar, row_length, heading_space, column_width, cutoff, string):
+    printable = ''
     if bool(hbars) and not bool(vbars):
-        print(hbar * (row_length - 1))
+        if string:
+            printable += hbar * (row_length - 1)
+        else:
+            print(hbar * (row_length - 1))
 
     if bool(vbars) and not bool(hbars):
         if vbars == 'full':
-            print(' ' * heading_space + vbar, end='')
+            if string:
+                printable += ' ' * heading_space + vbar
+            else:
+                print(' ' * heading_space + vbar, end='')
             for _ in range(1, cutoff + 1):
-                print(' ' * (column_width + 1) + vbar, end='')
-            print()
+                if string:
+                    printable += ' ' * (column_width + 1) + vbar
+                else:
+                    print(' ' * (column_width + 1) + vbar, end='')
+            if string:
+                printable += '\n'
+            else:
+                print()
         else:
-            print(' ' * heading_space + vbar)
+            if string:
+                printable += ' ' * heading_space + vbar
+            else:
+                print(' ' * heading_space + vbar)
 
     if bool(hbars) and bool(vbars):
         row_length += len(vbar) * cutoff if vbars == 'full' else row_length
-        print(hbar * heading_space + vbar + hbar * (row_length - heading_space - len(vbar) - 1) + vbar)
+        if string:
+            printable += hbar * heading_space + vbar + hbar * (row_length - heading_space - len(vbar) - 1) + vbar
+        else:
+            print(hbar * heading_space + vbar + hbar * (row_length - heading_space - len(vbar) - 1) + vbar)
 
     if not bool(hbars) and not bool(vbars):
-        print('\n')
+        if string:
+            printable += '\n'
+        else:
+            print('\n')
+
+    if string:
+        return printable
 
 
-def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff: int = 10,
+def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff: int = 10, give_string: bool = False,
                      hbars: bool | str = True, vbars: bool | str = 'full',
                      headings_every_row: bool = True,
                      universal_column: bool = True, universal_width: int = None,
-                     recursion: bool = False, heading_space: int = None
-                     ) -> None:
+                     recursion: bool = False, heading_space: int = None, string: str = ''
+                     ) -> str | None:
     """
     Prints multiple lists in rows.  If any of the lists are larger than :param cutoff:, a multi-linebreak occurs and
     the remaining entries continue printing. If :param hbars: is True the multi-linebreak is drawn as a horizontal bar.
@@ -82,9 +107,10 @@ def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff:
         Recommended to keep set to None.
     :param recursion: Type - bool: For internal use only: DO NOT SET TO TRUE. Indicates if the pass is recursive.
     :param heading_space: Type - int: For internal use only: required for recursion pass.
-    :return: None
+    :param string: Type - str: Recursively pass the string being built
+    :return: printable if give_string is True
     """
-
+    printable = string
     leftovers = None
     skip_vbars = False
     number_of_lists = len(lists)
@@ -109,7 +135,8 @@ def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff:
         universal_width = max(  # sets width to the length of the longest item over all lists, if needed
                 max(len(str(item)) for item in sublist) if sublist else 0
                 for sublist in lists
-            ) if (universal_width is not None or universal_width == 0) else 0
+            ) if (universal_width is None or universal_width == 0) else 0
+        print("universal width: ", universal_width)
 
     max_list_length = max(len(original_list) for original_list in lists)
     temp_lists = [original_list.copy() for original_list in lists]
@@ -131,44 +158,72 @@ def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff:
             for sublist in lists
         )
 
-    row_length = (universal_width + 1) * cutoff + heading_space + len(hbar) if bool(hbars) else (len(vbar) if
-                                                                                                     bool(vbars) else 0)
+    row_length = (universal_width + 1) * cutoff + heading_space + len(hbar) if bool(hbars) else (len(vbar) if  bool(vbars) else 0)
 
+    
     if not recursion:  # draw top bars
-        draw_bars(hbars, hbar, vbars, vbar, row_length, heading_space, column_width, cutoff)
+        if give_string:
+            printable = ''
+            printable += draw_bars(hbars, hbar, vbars, vbar, row_length, heading_space, column_width, cutoff, string=True) + '\n'
+        else:
+            draw_bars(hbars, hbar, vbars, vbar, row_length, heading_space, column_width, cutoff, string=False)
 
     # printing lists
     for temp_list in temp_lists:
         for index, item in enumerate(temp_list, 0):
-            if index == 0 and has_headings:
-                if not headings_every_row and bool(vbars) and recursion:
-                    print(f"{vbar:>{heading_space + 1}}", end=' ')
+            if index == 0 and has_headings:  # handle headings
+                if not headings_every_row and bool(vbars) and recursion:  # recursove pass, add header and vbar?
+                    if give_string:
+                        printable += f"{vbar:>{heading_space + 1}}" + ' '
+                    else:
+                        print(f"{vbar:>{heading_space + 1}}", end=' ')
                 else:
-                    print(f"{str(item):<{heading_space + 1}}", end=' ')
-            else:
-                print(f"{str(item):<{column_width}}" + (vbar if vbars == 'full' else ''), end=' ')
-        print()  # Move to the next line
+                    if give_string:
+                        printable += f"{str(item):<{heading_space + 1}}" + ' '
+                    else:
+                        print(f"{str(item):<{heading_space + 1}}", end=' ')
+            else:  # regular list item
+                if give_string:
+                    printable += f"{str(item):<{column_width}}" + (vbar if vbars == 'full' else '') + ' '
+                else:
+                    print(f"{str(item):<{column_width}}" + (vbar if vbars == 'full' else ''), end=' ')
+        if give_string:
+            printable += '\n'
+        else:
+            print()  # Move to the next line
 
-    draw_bars(hbars, hbar, vbars, vbar, row_length, heading_space, column_width, cutoff)
+    if give_string:
+        printable += draw_bars(hbars, hbar, vbars, vbar, row_length, heading_space, column_width, cutoff, string=give_string)
+    else:
+        draw_bars(hbars, hbar, vbars, vbar, row_length, heading_space, column_width, cutoff, string=give_string)
+
+    if give_string:
+        printable += '\n'
 
     if max_list_length - cutoff > 0:
-        multi_list_print(leftovers, [heading for heading in headings] if headings_every_row
-        else [' ' * heading_space for _ in headings], cutoff, hbars, vbars, headings_every_row,
-                         universal_column, universal_width, recursion=True, heading_space=heading_space)
+        return multi_list_print(leftovers, [heading for heading in headings] if headings_every_row
+        else [' ' * heading_space for _ in headings], cutoff, give_string, hbars, vbars, headings_every_row,
+                         universal_column, universal_width, string=printable if printable is not None else '', recursion=True, heading_space=heading_space)
+    else:
+        if give_string and printable is not None:
+            # print(printable)
+            print('done')
+            return printable  # runs but returns None
 
 
 def main():
-    multi_list_print(
-        [['aaaaaaaaaaaaaaa'] + [str(x) for x in range(1, 102)], [str(int(i) ** 2) for i in range(1, 102)],
-         [str(int(i) ** 3) for i in range(1, 102)], [str(int(i) ** 4) for i in range(1, 102)]],
-        ['x', 'x^2', 'x^3', 'x^4'], cutoff=10,
-        hbars=True, vbars='full', headings_every_row=True, universal_column=False)
+    # multi_list_print(
+    #    [['aaaaaaaaaaaaaaa'] + [str(x) for x in range(1, 102)], [str(int(i) ** 2) for i in range(1, 102)],
+    #      [str(int(i) ** 3) for i in range(1, 102)], [str(int(i) ** 4) for i in range(1, 102)]],
+    #     ['x', 'x^2', 'x^3', 'x^4'], cutoff=10,
+    #     hbars=True, vbars='full', headings_every_row=True, universal_column=True, string=False)
 
     # column_print([str(x ** 2) for x in range(1, 101)], items_per_line=25)
 
-    multi_list_print([[str(i) for i in range(1, 101)], [str(i ** 4) for i in range(1, 101)]],
-                     hbars=True, vbars=True)
+    # multi_list_print([[str(i) for i in range(1, 101)], [str(i ** 4) for i in range(1, 101)]], ['x', 'x^4'])
 
+    print(multi_list_print([[str(i) for i in range(1, 101)], [str(i ** 4) for i in range(1, 101)]], ['x', 'x^4'], hbars=True, vbars='full', universal_column=True, give_string=True))
+    # print(printable)
 
 if __name__ == '__main__':
     main()

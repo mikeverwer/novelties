@@ -2,34 +2,42 @@ import usefull_prints as uprint
 from main_gui import sg, primes_so_far, primes_for_display
 
 
-def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
+def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelty_graph_x=1000, novelty_graph_y=1000):
     sg.theme(theme)
     menu_def = [['&Application', ['E&xit']],
                 ['&Help', ['&About']]]
     right_click_menu_def = [[], ['Edit Me', 'Versions', 'Nothing', 'More Nothing', 'Exit']]
 
-    novelty_column = [sg.Multiline(
-        primes_for_display,
-        size=(45, 200), expand_x=True, expand_y=False, k='novelty output', font=('Helvetica', 14), write_only=True,
-        enable_events=False),
+# Beginning of Novelties Layout
+    novelty_graph_layout = [
+        sg.Graph((novelty_graph_x, novelty_graph_y), (0, novelty_graph_y), (novelty_graph_x, 0),
+                 background_color='lavender', key='novelty graph', expand_y=True, enable_events=True)  # colour AliceBlue
     ]
 
-# Beginning of Novelties Layout
-    novelties_layout = [[sg.Text("Enter the largest natural number to reach: ")],
-                        [sg.Input(key='max novelty', size=(10, 1), default_text='250'),
-                         sg.Button('Show', key='generate novelties')],
-                        [sg.Pane([
-                            sg.Col([[sg.T('Largest Known Prime: ##')],
-                                    [sg.Text('primes list:')], [sg.T(primes_for_display)],
-                                    ]),
-                            sg.Column(
-                                layout=[
-                                    [sg.Stretch(), *novelty_column, sg.Stretch()]
-                                ],
-                                scrollable=True, vertical_scroll_only=False, size=(50, 200), key='novelty output',
-                                expand_y=True),
-                        ], size=(50, 200), orientation='h', expand_y=True, expand_x=True)],
-                        ]
+    novelty_graph_column = sg.Column(layout=[
+            [sg.Stretch(), *novelty_graph_layout, sg.Stretch()]
+        ], scrollable=True, size=(novelty_graph_x, 500), key='novelty column', expand_y=True
+    )
+    
+    conversion_chart_column = sg.Column(layout=[
+            [sg.T('Largest Known Prime: ##')],
+            [sg.Text('Ordinal to Prime Conversion Chart:')], [sg.T(primes_for_display, key='conversion chart')],
+        ], expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(215, 500)
+    )
+
+    left_column = sg.Column(layout=[
+            [sg.Text(' The Novelties ', font='Helvetica 18 bold', pad=(5,15), relief='raised', border_width=5)],
+            [sg.Text("Enter the largest natural number to reach: ")],
+            [sg.Input(key='max novelty', size=(10, 1), default_text='250'), sg.Button('Show', key='generate novelties')],
+            [sg.Pane(
+                [sg.Column([[sg.T('')]]), conversion_chart_column]
+            , orientation='v', relief='flat', size=(215, 500))] 
+        ]
+    )
+
+    novelties_layout = [
+        [left_column, novelty_graph_column],
+    ]
     
 # Beginning of Sieve Layout
     sieve_graph_layout = [
@@ -69,7 +77,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
     ]
 
     sieve_layout = [
-        [sg.Text('The Sieve of Eratosthenes', font=('Helvetica', 18, 'bold')), sg.T('', s=(7, 1)), sieve_interact_display_frame
+        [sg.Text(' The Sieve of Eratosthenes ', font=('Helvetica', 18, 'bold'), relief='raised', border_width=5), sg.T('', s=(4, 1)), sieve_interact_display_frame
         ]
     ]
 
@@ -104,16 +112,10 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000):
                       auto_refresh=True)]
     ]
 
-    placeholder_layout = [[sg.T('placeholder tab!')],
-                          [sg.Image(data=sg.DEFAULT_BASE64_ICON, k='-IMAGE-')],
-                          [sg.ProgressBar(100, orientation='h', size=(20, 20), key='-PROGRESS BAR-'),
-                           sg.Button('Test Progress bar')]]
-
     layout = [[sg.MenubarCustom(menu_def, key='-MENU-', font='Courier 15', tearoff=True)],
               ]
 
     layout += [[sg.TabGroup([[sg.Tab('Sieve', sieve_layout),
-                              sg.Tab('progress bar', placeholder_layout),
                               sg.Tab('The Novelties', novelties_layout),
                               sg.Tab('Log', log_layout)
                               ]], key='-TAB GROUP-', expand_x=True, expand_y=True
