@@ -123,6 +123,6 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
     # layout[-1].append(sg.Sizegrip())
     window = sg.Window('Primes and Novelties', layout, right_click_menu=right_click_menu_def,
                        right_click_menu_tearoff=True, grab_anywhere=True, resizable=True, margins=(0, 0),
-                       finalize=True, keep_on_top=True)
+                       finalize=True, keep_on_top=False)
     window.set_min_size(window.size)
     return window

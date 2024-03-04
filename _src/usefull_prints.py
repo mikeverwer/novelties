@@ -189,9 +189,9 @@ def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff:
                         print(vbar + ' ')
             else:  # regular list item
                 if give_string:
-                    printable += f"{str(item):<{column_width}}" + (vbar if vbars == 'full' else '') + ' '
+                    printable += f"{str(item) :<{column_width}}" + (vbar if vbars == 'full' else '') + ' '
                 else:
-                    print(f"{str(item):<{column_width}}" + (vbar if vbars == 'full' else ''), end=' ')
+                    print(f"{str(item) :<{column_width}}" + (vbar if vbars == 'full' else ''), end=' ')
         if give_string:
             printable += '\n'
         else:

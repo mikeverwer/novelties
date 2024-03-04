@@ -60,38 +60,21 @@ def pt_to_px(pt: int):
     return round((pt / 72) * 96)
 
 
-def create_conversion_chart(window, values, char_s, ordinals, largest):
-    global primes
+def conversion_chart_window(chart_string, longest):
+    x_size = 1 + (len(str(longest)) + 2) * 10
+    layout = [[sg.Multiline(chart_string, size=(x_size, 15), font='Courier 12 bold', expand_x=True, expand_y=True, write_only=True, disabled=True,
+                      reroute_cprint=True, autoscroll=True, auto_refresh=True)]]
+    window = sg.Window('Prime to Ordinal Conversion Chart', layout, use_default_focus=False, resizable=True, modal=False, finalize=True)
+    return window
 
-    column_chars = len(str(largest)) + 1  # was + 2
-    pixel_width = column_chars * char_s
-    number_of_columns = (950 // pixel_width)
-    columns = 250 // pt_to_px(len(str(largest)) + 1)
-    conversion_chart_column = sg.Column(layout=[
-            [sg.Text('Ordinal to Prime Conversion Chart:')], [sg.Multiline('', key='conversion chart', font='Courier 12 bold', expand_x=True, expand_y=True, write_only=True, auto_size_text=True)],
-        ], expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size_subsample_width=2, visible=True
-    )
-    sg.popup_no_buttons(conversion_chart_column, title='Prime to Ordinal Conversion Chart', non_blocking=True)
-    window['conversion chart'].update(value=uprint.multi_list_print([['e'] + ordinals, ['1'] + primes],
-                            cutoff=5, give_string=True, headings_every_row=False)) 
-     
 
 def create_novelties(window, values, steps=None, em: int = 16, ids=None):
-    graph = window['novelty graph']
-    max_value = int(values['novelty input'])
     global primes
     # Steps: 
     # 1) find line height, header width and column width.
     # 2) draw bars
     # 3) draw the text. utf-8 pls.
     # primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 else primes
-    primes = soe.sieve_of_eratosthenes(max_value, show=False)  # Build list of primes, useful for primality testing and converting
-    prime_ordinals = [i for i in range(1, len(primes) + 1)]
-    create_conversion_chart(window, values, em, prime_ordinals, max_value)
-
-    
-    
-
 
 
 def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
@@ -341,6 +324,7 @@ def sieve_animation(window, values, steps=None, em: int = 16, outline_ids=None):
 
 def main():
     window = mk.make_window(sg.theme(), sieve_graph_x, sieve_graph_y)
+    windows = [window]
     sieve_graph = window['sieve graph']
     global animate_sieve
     global animation_speed_sieve
@@ -350,20 +334,23 @@ def main():
     text_height = pt_to_px(int(sieve_font[-2:]))
     outline_ids = None
     sieve_selection_box = None
-    show_chart = True
 
     # This is an Event Loop
     while True:
-        event, values = window.read(timeout=1000 // update_interval)
+        win, event, values = sg.read_all_windows(timeout=1000 // update_interval)
+        print(win)
         # keep an animation running so show things are happening
         if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
             print('============ Event = ', event, ' ==============')
             print('-------- Values Dictionary (key=value) --------')
             for key in values:
                 print(key, ' = ', values[key])
-        if event in (None, 'Exit'):
+        if event in (None, 'Exit', sg.WINDOW_CLOSED):
             print("[LOG] Clicked Exit!")
-            break
+            if win == window:
+                break
+            win.close()
+            windows.remove(win)
 
         if event == 'Test Progress bar':
             print("[LOG] Clicked Test Progress Bar!")
@@ -382,8 +369,12 @@ def main():
                 pass
 
         elif event == '-SHOW CHART-':
-            show_chart = not show_chart
-            window['conversion chart'].update(visible=show_chart)
+            max_value = int(values['novelty input'])
+            primes = soe.sieve_of_eratosthenes(max_value, show=False)  # Build list of primes, useful for primality testing and converting
+            prime_ordinals = [i for i in range(1, len(primes) + 1)]
+            chart_window = conversion_chart_window(max_value, prime_ordinals)
+            windows.append(chart_window)
+
             
 
     # ----- Sieve Tab -------------------------------------------------------------------------------
@@ -467,14 +458,16 @@ def main():
 
 # ----- Animations -------------------------------------------------------------------------------
         if animate_sieve:
+            print(window, values)
             print('[LOG] Animation Pass')
             outline_ids = sieve_animation(window, values, dict, text_height, outline_ids)
             # sieve_animation.sieve_animation(window, values, )
             if sieve_animation_steps['finished']:
                 animate_sieve = False
 
-    window.close()
-    exit(0)
+    for win in windows:
+        window.close()
+        exit(0)
 
 
 if __name__ == "__main__":
