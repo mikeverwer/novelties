@@ -372,7 +372,9 @@ def main():
             max_value = int(values['novelty input'])
             primes = soe.sieve_of_eratosthenes(max_value, show=False)  # Build list of primes, useful for primality testing and converting
             prime_ordinals = [i for i in range(1, len(primes) + 1)]
-            chart_window = conversion_chart_window(max_value, prime_ordinals)
+            chart = uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes],
+                            cutoff=10, give_string=True, headings_every_row=False)
+            chart_window = conversion_chart_window(chart, max_value)
             windows.append(chart_window)
 
             
