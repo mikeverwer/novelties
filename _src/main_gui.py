@@ -60,6 +60,22 @@ def pt_to_px(pt: int):
     return round((pt / 72) * 96)
 
 
+def create_conversion_chart(window, values, char_s, ordinals, largest):
+    global primes
+
+    column_chars = len(str(largest)) + 1  # was + 2
+    pixel_width = column_chars * char_s
+    number_of_columns = (950 // pixel_width)
+    columns = 250 // pt_to_px(len(str(largest)) + 1)
+    conversion_chart_column = sg.Column(layout=[
+            [sg.Text('Ordinal to Prime Conversion Chart:')], [sg.Multiline('', key='conversion chart', font='Courier 12 bold', expand_x=True, expand_y=True, write_only=True, auto_size_text=True)],
+        ], expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size_subsample_width=2, visible=True
+    )
+    sg.popup_no_buttons(conversion_chart_column, title='Prime to Ordinal Conversion Chart', non_blocking=True)
+    window['conversion chart'].update(value=uprint.multi_list_print([['e'] + ordinals, ['1'] + primes],
+                            cutoff=5, give_string=True, headings_every_row=False)) 
+     
+
 def create_novelties(window, values, steps=None, em: int = 16, ids=None):
     graph = window['novelty graph']
     max_value = int(values['novelty input'])
@@ -68,13 +84,12 @@ def create_novelties(window, values, steps=None, em: int = 16, ids=None):
     # 1) find line height, header width and column width.
     # 2) draw bars
     # 3) draw the text. utf-8 pls.
-    print(f'[LOG]  Largest known prime: {primes[-1]}')
-    primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 \
-        else primes
+    # primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 else primes
+    primes = soe.sieve_of_eratosthenes(max_value, show=False)  # Build list of primes, useful for primality testing and converting
     prime_ordinals = [i for i in range(1, len(primes) + 1)]
-    columns = 250 // pt_to_px(len(str(max_value)) + 1)
-    window['conversion chart'].update(value=uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes],
-                            cutoff=5, give_string=True, headings_every_row=False))
+    create_conversion_chart(window, values, em, prime_ordinals, max_value)
+
+    
     
 
 
@@ -335,6 +350,7 @@ def main():
     text_height = pt_to_px(int(sieve_font[-2:]))
     outline_ids = None
     sieve_selection_box = None
+    show_chart = True
 
     # This is an Event Loop
     while True:
@@ -358,14 +374,19 @@ def main():
                     progress_bar.update(current_count=i + 1)
             print("[LOG] Progress bar complete!")
 
-# ----- Novelty Tab -----------------------------------------------------------------------------
+    # ----- Novelty Tab -----------------------------------------------------------------------------
         elif event == 'generate novelties':
             try:
                 create_novelties(window, values)
             except ValueError:
                 pass
 
-# ----- Sieve Tab -------------------------------------------------------------------------------
+        elif event == '-SHOW CHART-':
+            show_chart = not show_chart
+            window['conversion chart'].update(visible=show_chart)
+            
+
+    # ----- Sieve Tab -------------------------------------------------------------------------------
         elif event == 'go-sieve':
             try:
                 max_sieve = int(values['sieve input'])

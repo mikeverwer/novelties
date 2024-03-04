@@ -20,16 +20,17 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
     )
     
     conversion_chart_column = sg.Column(layout=[
-            [sg.Text('Ordinal to Prime Conversion Chart:')], [sg.T('', key='conversion chart', font='Courier 12 bold', s=(250, novelty_graph_y))],
-        ], expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(250, 500)
+            [sg.Text('Ordinal to Prime Conversion Chart:')], [sg.Multiline('', key='conversion chart', font='Courier 12 bold', expand_x=True, expand_y=True, write_only=True, auto_size_text=True)],
+        ], expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size_subsample_width=2, visible=True
     )
 
     left_column = sg.Column(layout=[
             [sg.Text(' The Novelties ', font='Helvetica 18 bold', pad=(5,15), relief='raised', border_width=5)],
             [sg.Text("Enter the largest natural number to reach: ")],
             [sg.Input(key='novelty input', size=(10, 1), default_text='250'), sg.Button('Show', key='generate novelties')],
-            [conversion_chart_column] 
-        ]
+            [sg.Button('Show Chart', k='-SHOW CHART-')],
+            [sg.pin(conversion_chart_column)]
+        ], expand_x=True
     )
 
     novelties_layout = [
