@@ -138,6 +138,8 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
             g = int(hex_code[3:5], 16) / 255.0
             b = int(hex_code[5:7], 16) / 255.0
 
+            
+
             # Calculate luminance
             luminance = (0.2126 * r) + (0.587 * g) + (0.0722 * b)
 
