@@ -16,25 +16,20 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
 
     novelty_graph_column = sg.Column(layout=[
             [sg.Stretch(), *novelty_graph_layout, sg.Stretch()]
-        ], scrollable=True, size=(novelty_graph_x, 500), key='novelty column', expand_y=True, expand_x=True
-    )
-    
-    conversion_chart_column = sg.Column(layout=[
-            [sg.Text('Ordinal to Prime Conversion Chart:')], [sg.Multiline('', key='conversion chart', font='Courier 12 bold', expand_x=True, expand_y=True, write_only=True, auto_size_text=True)],
-        ], expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size_subsample_width=2, visible=True
+        ], scrollable=True, vertical_scroll_only=True, size=(novelty_graph_x + 10, 500), key='novelty column', expand_y=True, expand_x=True
     )
 
     left_column = sg.Column(layout=[
             [sg.Text(' The Novelties ', font='Helvetica 18 bold', pad=(5,15), relief='raised', border_width=5)],
-            [sg.Text("Enter the largest natural number to reach: ")],
-            [sg.Input(key='novelty input', size=(10, 1), default_text='250'), sg.Button('Show', key='generate novelties')],
-            [sg.Button('Show Chart', k='-SHOW CHART-')],
-            [sg.pin(conversion_chart_column)]
+            [sg.Push(), sg.Column(layout=[
+                [sg.Text("Enter the largest natural\nnumber to reach: ")],
+                [sg.Input(key='novelty input', size=(10, 1), default_text='250'), sg.Button('Show', key='generate novelties')]]), sg.Push()],
+            [sg.Push(), sg.Button('Oridinal to Prime\nConversion Chart', k='-SHOW CHART-', s=(14, 2)), sg.Push()],
         ], expand_x=True
     )
 
     novelties_layout = [
-        [left_column, sg.Stretch(), novelty_graph_column],
+        [sg.vtop(left_column), sg.Stretch(), novelty_graph_column, sg.T('')]
     ]
     
 # Beginning of Sieve Layout
@@ -91,7 +86,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
         layout=[
             [sg.Stretch(), *sieve_graph_layout, sg.Stretch()]
         ],
-        scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x, 500), key='sieve column', expand_y=True),
+        scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x + 10, 500), key='sieve column', expand_y=True),
         sg.Column(
             layout=[
                 [sg.Text('Primes found so far:', font='Helvetica 16'), sg.T('')],

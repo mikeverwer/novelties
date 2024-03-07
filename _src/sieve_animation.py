@@ -1,4 +1,4 @@
-import graph_value_class as gv
+import novelties._src.graph_object_classes as go
 import usefull_prints as uprint
 import random
 from main_gui import colours_list, colours_dict, sieve_font, sg, update_interval
@@ -35,7 +35,7 @@ def sieve_animation(window, values, sieve_value_objects, steps=None, em: int = 1
             row = index // number_of_columns + 1
             column = index % number_of_columns + 1
             coords = (column * (column_width * em), row * 1.5 * em)
-            value_object = gv.SieveGraphObject(value=number, coord=coords, row=row, column=column, is_prime=True,
+            value_object = go.SieveGraphObject(value=number, coord=coords, row=row, column=column, is_prime=True,
                                                factors=[], hitbox=None)
             value_object.hitbox = value_object.make_hitbox(em)
             sieve_value_objects.append(value_object)

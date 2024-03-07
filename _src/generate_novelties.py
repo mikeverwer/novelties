@@ -56,17 +56,19 @@ def generate_single(value: int):
 
     novelty = '\u2022'.join(novelty_list)  # 2B58  00b7
 
-    return novelty
+    return novelty, factors_dict
 
 
 def generate_up_to(max_value, display=False):
     global primes
-    print(f'largest known prime: {primes[-1]}')
+    max_value = int(max_value)
+    factorizations = {}
+    if display:
+        print(f'largest known prime: {primes[-1]}')
     primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 \
         else primes
-    print(primes)
-    prime_ordinals = [i for i in range(1, len(primes) + 1)]
     if display:
+        prime_ordinals = [i for i in range(1, len(primes) + 1)]
         print('\nPrime to Prime Ordinal conversion chart:')
         uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes],
                                 ['Ordinal:', 'Prime:'],
@@ -74,21 +76,25 @@ def generate_up_to(max_value, display=False):
 
     the_novelties = ['e']
     for i in range(2, max_value + 1):
-        novelty = generate_single(i)
+        novelty, factors = generate_single(i)
+        factorizations[i] = factors
         the_novelties.append(novelty)
 
-    if display:
-        ordinals = [i for i in range(1, len(the_novelties) + 1)]
-        print(f'\nThe Novelties up to {max_value}.\n')
-        # uprint.column_print(the_novelties)
-        uprint.multi_list_print([ordinals, the_novelties],
-                                ['Natural:', 'Novelty:'],
-                                cutoff=5)
-        print()
+
+    return the_novelties, factorizations
 
 
 def main():
-    generate_up_to(int(input("Input the largest number to reach: ")), True)
+    value = int(input("Input the largest number to reach: "))
+    the_novelties, factors = generate_up_to(value, True)
+    ordinals = [i for i in range(1, len(the_novelties) + 1)]
+    print(f'\nThe Novelties up to {value}.\n')
+    # uprint.column_print(the_novelties)
+    uprint.multi_list_print([ordinals, the_novelties],
+                            ['Natural:', 'Novelty:'],
+                            cutoff=5)
+    print()
+
 
 
 if __name__ == '__main__':
