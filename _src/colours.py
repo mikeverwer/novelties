@@ -1,5 +1,5 @@
 """
-Returns the list of all colours used by PySimpleGui.
+Get a list or dictionary of all colours used by PySimpleGui (tkinter).
 """
 import PySimpleGUI as sg
 
@@ -666,7 +666,8 @@ def dict_colours():
 def list_colour_names():
     return list(dict_colours().keys())
 
-def main():
+
+def main():  # demo
     color_map = dict_colours()
     print(f"length of list: {len(list_colour_names())}")
 

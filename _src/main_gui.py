@@ -4,6 +4,7 @@ import usefull_prints as uprint
 import make_window as mk
 import graph_object_classes as go
 import colours
+import brightness
 # import sieve_animation
 import PySimpleGUI as sg
 import time
@@ -131,32 +132,12 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
             sieve_value_objects.append(value_object)
 
     def choose_colour(seed):
-
-        def is_bright_color(hex_code):
-            # Convert hex code to RGB values, normalized to 1
-            r = int(hex_code[1:3], 16) / 255.0
-            g = int(hex_code[3:5], 16) / 255.0
-            b = int(hex_code[5:7], 16) / 255.0
-
-            
-
-            # Calculate luminance
-            luminance = (0.2126 * r) + (0.587 * g) + (0.0722 * b)
-
-            # Define a threshold for brightness (higher = more colour diversity, but poorer visibility)
-            brightness_threshold = 0.53
-
-            print(luminance)
-
-            # Return True if the color is considered bright, False otherwise
-            return luminance > brightness_threshold
-
         # colour_name = random.choice(colours_list)  # colour is random each run
         colour_name = colours_list[(int(seed) * 97) % len(colours_list)]  # colour tied to prime, first try
         colour_hex = colours_dict[colour_name]
         attempts = 1  # ensure the colour is "appropriate"
         print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
-        while is_bright_color(colour_hex):
+        while brightness.lightness(colour_hex, 0.80):
             attempts += 1
             # colour_name = random.choice(colours_list)  # colour is random each run
             colour_name = colours_list[(int(seed) ** (attempts * 2)) % len(colours_list)]  # colour tied to prime
