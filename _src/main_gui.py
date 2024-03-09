@@ -17,7 +17,11 @@ primes = soe.primes_up_to_100()
 
 sieve_graph_x = 1000
 sieve_graph_y = 20000
+novelty_graph_x = 1000
+novelty_graph_y = 20000
 sieve_font = 'Courier 14'
+novelty_font = 'Courier 14'
+novelty_objects_NatKey, novelty_objects_NovKey = {}, {}
 
 sieve_animation_steps = {'find coordinates': False,
                          'draw numbers': False,
@@ -61,6 +65,15 @@ def pt_to_px(pt: int):
     return round((pt / 72) * 96)
 
 
+def super(char):
+    if len(char) == 1 and char.isdigit():
+        superscript_digits = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
+        unicode_superscript = char.translate(superscript_digits)
+        return unicode_superscript
+    else:
+        raise ValueError("Input must be a single-digit string.")
+
+
 def conversion_chart_window(chart_string, longest):
     x_size = 1 + (len(str(longest)) + 2) * 10
     layout = [[sg.Multiline(chart_string, size=(x_size, 15), font='Courier 12 bold', expand_x=False, expand_y=True, write_only=True, disabled=True,
@@ -69,8 +82,41 @@ def conversion_chart_window(chart_string, longest):
     return window
 
 
-def create_novelties(window, values, steps=None, em: int = 16, ids=None, ordering='natural'):
+def make_novelty_objects(graph_width: int | float, longest: int, largest: int, em: int, novelties: dict[str], factors: dict[dict[int: int]], ):
+        print(f'[LOG] Building co-ordinates.')
+        # Initialzes objects to a graph
+        column_chars = longest  # was + 2
+        pixel_width = column_chars * em
+        number_of_columns = ((graph_width) // pixel_width) + 1
+        # rows = (largest // number_of_columns) + 1
+        numbers = [i for i in range(2, largest + 1)]
+
+        NatKey: dict = {}  # for ordering, maybe make 2 ordered dictionaries rather than sorting each time
+        NovKey: dict = {}  # still needs to be ordered according to novelty ordering definition
+        print(f'[LOG] Generating objects.')
+        for index, number in enumerate(numbers):
+            row = index // number_of_columns + 1
+            column = index % number_of_columns + 1
+            coords = ((column * pixel_width) - (pixel_width // 2) - em, row * 3.75 * em)
+            value_object = go.NoveltyObject(natural=number, novelty=novelties[number], coord=coords, row=row, column=column, factorization=factors[number], hitbox=None)
+            value_object.hitbox = value_object.make_hitbox(em)
+            NatKey[number] = value_object
+            NovKey[novelties[number]] = value_object
+        
+        # sort NovKey
+        sorted_dict = dict(sorted(NovKey.items(), key=lambda x: (x[0].count('•'), [int(part) for part in x[0].split('•')])))
+        NovKey = sorted_dict
+        for key, value in sorted_dict.items():
+            print(f"{key}: {value}")
+
+        return NatKey, NovKey
+
+
+
+def create_novelties(window, values, nat_dictionary: dict[go.NoveltyObject] = None, nov_dictionary: dict[go.NoveltyObject] = None, 
+                     ordering='novelty', steps=None, em=16, ids=None):
     global primes
+    graph = window['novelty graph']
     # Steps: 
     # 1) generate novelties up to N
     # 2) find line height and column width from font size and largest novelty.
@@ -78,33 +124,28 @@ def create_novelties(window, values, steps=None, em: int = 16, ids=None, orderin
     # 4) draw the text. utf-8 pls.
     # primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 else primes
 
-    def make_coords(graph_width, longest: int, largest: int, em: int, novelties: list, factors: dict):
-        print(f'[LOG] Building co-ordinates.')
-        # Initialzes objects to a graph
-        column_chars = longest + 1  # was + 2
-        pixel_width = column_chars * em
-        number_of_columns = ((graph_width - 50) // pixel_width)
-        # rows = (largest // number_of_columns) + 1
-        numbers = [i for i in range(2, largest + 1)]
+    # biggest = int(values['novelty input'])
+    # novelties, factorizations = gn.generate_up_to(biggest)
+    # longest = max(len(novelties[item]) for item in novelties)
+    # novelty_objects_NatKey, novelty_objects_NovKey = make_novelty_objects(novelty_graph_x, longest, biggest, em, novelties, factorizations)
 
-        novelty_objects = []
-        print(f'[LOG] Generating objects.')
-        for index, number in enumerate(numbers):
-            row = index // number_of_columns + 1
-            column = index % number_of_columns + 1
-            coords = (column * pixel_width, row * 1.5 * em)
-            value_object = go.NoveltyObject(natural=number, novelty=novelties[number - 1], coord=coords, row=row, column=column, factorization=factors[number], hitbox=None)
-            value_object.hitbox = value_object.make_hitbox(em)
-            novelty_objects.append(value_object)
-
-
-    biggest = int(values['novelty input'])
-    novelties, factorizations = gn.generate_up_to(biggest)
-    longest = max(len(item) for item in novelties)
-    make_coords(1000, longest, biggest, em, novelties, factorizations)
+    # draw novelties
+    if ordering == 'natural':
+        for key, value in nat_dictionary.items():
+            graph.draw_text(text=f"{str(value.natural) : ^{value.length}}\n{str(value.novelty) : ^{value.length}}", location=value.coord, font='Courier 14 bold')
+    elif ordering == 'novelty':
+        i = 2
+        for key, value in nov_dictionary.items():
+            to_print = f"{str(key) : ^{value.length}}\n{str(value.natural) : ^{value.length}}"
+            coordinate = nat_dictionary[i].coord
+            print(to_print)
+            # graph.draw_text(str(key), location=value.coord, font = 'Courier 14 bold')
+            graph.draw_text(text=to_print, location=coordinate, font='Courier 14 bold')
+            i += 1
+            window.refresh()
 
 
-def sieve_animation(window, values, em: int = 16, outline_ids=None):
+def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
     graph = window['sieve graph']
     global update_interval
     global animation_speed_sieve
@@ -136,20 +177,25 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
         colour_name = colours_list[(int(seed) * 97) % len(colours_list)]  # colour tied to prime, first try
         colour_hex = colours_dict[colour_name]
         attempts = 1  # ensure the colour is "appropriate"
-        print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
+        print(f"[LOG] Choosing Colour: {attempts = }, {colour_name}, {colour_hex}")
         while brightness.lightness(colour_hex, 0.80):
             attempts += 1
-            # colour_name = random.choice(colours_list)  # colour is random each run
-            colour_name = colours_list[(int(seed) ** (attempts * 2)) % len(colours_list)]  # colour tied to prime
-            colour_hex = colours_dict[colour_name]
-            print(f"attempt: {attempts},  colour: {colour_name}  :  {colour_hex}")
             if attempts > 5:  # limit attempts to break out of cyclic subgroups
                 colour_name = random.choice(colours_list)  # colour is random each run
                 colour_hex = colours_dict[colour_name]
+            else:
+                # colour_name = random.choice(colours_list)  # colour is random each run
+                colour_name = colours_list[(int(seed) ** (attempts * 2)) % len(colours_list)]  # colour tied to prime
+                colour_hex = colours_dict[colour_name]
+                print(f"[LOG] Choosing Colour: {attempts = },  {colour_name = },  {colour_hex = }")
 
         return colour_name
 
     def draw_box(thing):
+        if outline_ids is not None:  # remove previous outline outline
+                for outline_id in outline_ids:
+                    graph.delete_figure(outline_id)
+                    outline_ids.remove(outline_id)
         # choose colour
         sieve_animation_steps['prime colour'] = choose_colour(thing.value)
         box_colour = sieve_animation_steps['prime colour']
@@ -201,11 +247,10 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
 
     speed_index = int(values['sieve speed'])
     animation_speed_sieve = float(eval(sieve_speed_ticks[speed_index]))
-    print(f"current speed: {animation_speed_sieve}, update_interval: {update_interval}")
     # these are the steps of the animation: 
     # 1) Build co-ordinate system -> 2) draw numbers at each co-ordinate node -> 3) find prime and draw box -> 4) scratch out multiples -> Repeat from 3 until complete
     if sieve_animation_steps['find coordinates']:
-        max_sieve = int(values['sieve input'])
+        update_interval = 1000
         make_coords(max_sieve)
 
         # move to next step
@@ -215,6 +260,7 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
 
     elif sieve_animation_steps['draw numbers']:
         print('[LOG] Drawing numbers.')
+        update_interval = 1 * animation_speed_sieve
         for number in sieve_value_objects:
             graph.draw_text(str(number.value), number.coord, font=sieve_font + ' bold')
             # show hitboxes
@@ -231,7 +277,7 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
 
         if prime_obj is not None:
             prime_value = prime_obj.value
-            if prime_value >= int(values['sieve input']) ** 0.5:
+            if prime_value >= max_sieve ** 0.5:
                 if sieve_animation_steps['hurry up'] is None:
                     choice = sg.popup('\nWe have reached a point where the only remaining numbers are prime.\n\n'
                                       'Fast forward to the end?\n', title='',
@@ -244,7 +290,7 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
                     elif choice == 'No, thanks.':
                         sieve_animation_steps['hurry up'] = False
                     print(f"user chose: {choice}  :  hurry up = {sieve_animation_steps['hurry up']}")
-            if prime_value <= int(values['sieve input']):
+            if prime_value <= max_sieve:
                 print(f"[LOG] Prime Found {prime_value}. Drawing box.")
                 prime_obj.is_prime = False
                 primes_so_far.append(prime_value)
@@ -268,8 +314,11 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
 
             else:
                 # move to next step
+                print['[LOG] ended here']
                 sieve_animation_steps['box prime'] = False
                 sieve_animation_steps['finished'] = True
+
+
 
         else:  # no primes left to find, finish
             print(f"[LOG] Nothing left to box.")
@@ -281,7 +330,7 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
         prime_value = primes_so_far[-1]
         scratch = (int(prime_value) ** 2) + (scratch_animation_passes * int(prime_value))  # find number to scratch
         scratch_obj = sieve_value_objects[scratch - 2]
-        if scratch <= int(values['sieve input']):
+        if scratch <= max_sieve:
             print(f"[LOG] Scratch Multiple: {scratch}")
             if outline_ids is not None:  # remove previous outline outline
                 for outline_id in outline_ids:
@@ -292,7 +341,7 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
             draw_scratch(scratch_obj)
 
             # move to next step - scratching complete
-            if scratch + int(prime_value) <= int(values['sieve input']):  # scratch another
+            if scratch + int(prime_value) <= max_sieve:  # scratch another
                 sieve_animation_steps['scratch multiple'] = True
                 scratch_animation_passes += 1
                 update_interval = 5 * animation_speed_sieve
@@ -323,7 +372,7 @@ def sieve_animation(window, values, em: int = 16, outline_ids=None):
 
 
 def main():
-    main_window = mk.make_window(sg.theme(), sieve_graph_x, sieve_graph_y)
+    main_window = mk.make_window(sg.theme('DarkGrey4'), sieve_graph_x, sieve_graph_y, novelty_graph_x, novelty_graph_y)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
     global animate_sieve
@@ -331,7 +380,8 @@ def main():
     global primes_so_far
     global sieve_font
     global sieve_speed_ticks
-    text_height = pt_to_px(int(sieve_font[-2:]))
+    global update_interval
+    text_height_sieve = pt_to_px(int(sieve_font[-2:]))
     outline_ids = None
     sieve_selection_box = None
     window = main_window
@@ -355,8 +405,13 @@ def main():
 
     # ----- Novelty Tab -----------------------------------------------------------------------------
         elif event == 'generate novelties':
-            try:
-                create_novelties(window, values)
+            try: 
+                biggest = int(values['novelty input'])
+                novelties, factorizations = gn.generate_up_to(biggest)
+                longest = max(len(novelties[item]) for item in novelties)
+                em = 16
+                novelty_objects_NatKey, novelty_objects_NovKey = make_novelty_objects(novelty_graph_x, longest, biggest, em, novelties, factorizations)
+                create_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, 'novelty')
             except ValueError:
                 pass
 
@@ -367,8 +422,7 @@ def main():
                 max_value = int(values['novelty input'])
                 primes = soe.sieve_of_eratosthenes(max_value, show=False)  # Build list of primes, useful for primality testing and converting
                 prime_ordinals = [i for i in range(1, len(primes) + 1)]
-                chart = uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes],
-                                cutoff=10, give_string=True, headings_every_row=False)
+                chart = uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes], cutoff=10, give_string=True, headings_every_row=False)
                 chart_window = conversion_chart_window(chart, max_value)
                 windows.append(chart_window)
             except ValueError:
@@ -379,13 +433,14 @@ def main():
         elif event == 'go-sieve':
             try:
                 max_sieve = int(values['sieve input'])
+                text_height_sieve = pt_to_px(int(sieve_font[-2:]))  # calculate text size in pixels
                 sieve_column_width = len(str(max_sieve)) + 2
-                columns = 900 // (sieve_column_width * text_height)
+                columns = 900 // (sieve_column_width * text_height_sieve)
                 rows = (max_sieve // columns) + 1
                 primes_so_far = []
                 reset_globals(speed=values['sieve speed'])
                 # check graph size, remake if too small
-                if rows <= (sieve_graph_y // text_height) + text_height:  # enough rows
+                if rows <= (sieve_graph_y // text_height_sieve) + text_height_sieve:  # enough rows
                     window['found primes'].update(value='None')
                     sieve_graph.erase()
                     outline_ids = None
@@ -398,7 +453,7 @@ def main():
                                      custom_text=('Continue', 'Cancel'), keep_on_top=True)
 
                     print(f'button: {event}')
-                    print((sieve_graph_y // text_height) + text_height)
+                    print((sieve_graph_y // text_height_sieve) + text_height_sieve)
                     if event == 'Continue':
                         window.close()
                         window = mk.make_window(sg.theme(), sieve_graph_y=sieve_graph_y)
@@ -416,12 +471,17 @@ def main():
         elif event == 'sieve font':
             print("[LOG] Clicked Font Size")
             sieve_font = 'Courier ' + str(values[event])
-            text_height = pt_to_px(values[event])  # calculate text size in pixels
+            # text_height = pt_to_px(values[event])  # calculate text size in pixels
             window[event].update(values[event])
 
         elif event == 'pause sieve':
             print("[LOG] Clicked Pause/Play")
             animate_sieve = not animate_sieve
+            old_interval = update_interval
+            if animate_sieve:
+                update_interval = old_interval
+            else:  # prevent high refresh rate when idle.
+                update_interval = 1
 
         elif event == 'clear sieve':
             print("[LOG] Clicked Clear.")
@@ -440,24 +500,27 @@ def main():
                 sieve_graph.delete_figure(sieve_selection_box)
             click_x = float(values[event][0])
             click_y = float(values[event][1])
+            found: bool = False
             for value_object in sieve_value_objects:
-                if value_object.is_hit((click_x, click_y), xoffset=4, yoffset=3):
-                    bottom_right = (value_object.hitbox[1][0] + 4, value_object.hitbox[0][1] + 3)
-                    top_left = (value_object.hitbox[0][0] - 4, value_object.hitbox[1][1] - 3)
-                    sieve_selection_box = sieve_graph.draw_rectangle(bottom_right, top_left, line_color='magenta')
-                    update_text = f"{'Value:':<{23}}" + f'{value_object.value:<}'
-                    window['sieve clicked value'].update(value=update_text)
-                    if value_object.value in primes_so_far:
-                        update_text = f"{'Colour:':<{19}}" + value_object.colours[0]
-                        window['sieve clicked primes'].update(value=update_text)
-                    else:
-                        update_text = f"{'Prime Factors:':<{15}}" + str(value_object.factors) if value_object.factors is not None else f"{'Prime Factors:':<{20}}"
-                        window['sieve clicked primes'].update(value=update_text)
+                if not found:
+                    if value_object.is_hit((click_x, click_y), xoffset=4, yoffset=3):
+                        bottom_right = (value_object.hitbox[1][0] + 4, value_object.hitbox[0][1] + 3)
+                        top_left = (value_object.hitbox[0][0] - 4, value_object.hitbox[1][1] - 3)
+                        sieve_selection_box = sieve_graph.draw_rectangle(bottom_right, top_left, line_color='magenta')
+                        update_text = f"{'Value:':<{23}}" + f'{value_object.value:<}'
+                        window['sieve clicked value'].update(value=update_text)
+                        if value_object.value in primes_so_far:
+                            update_text = f"{'Colour:':<{19}}" + value_object.colours[0]
+                            window['sieve clicked primes'].update(value=update_text)
+                        else:
+                            update_text = f"{'Prime Factors:':<{15}}" + str(value_object.factors) if value_object.factors is not None else f"{'Prime Factors:':<{20}}"
+                            window['sieve clicked primes'].update(value=update_text)
+                        found = True
 
     # ----- Animations -------------------------------------------------------------------------------
         if animate_sieve:
             print('[LOG] Animation Pass')
-            outline_ids = sieve_animation(window, values, text_height, outline_ids)
+            outline_ids = sieve_animation(window, values, max_sieve, text_height_sieve, outline_ids)
             # sieve_animation.sieve_animation(window, values, )
             if sieve_animation_steps['finished']:
                 animate_sieve = False

@@ -1,10 +1,10 @@
 import usefull_prints as uprint
 from main_gui import sg, primes_so_far
 
-
+# themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
 def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelty_graph_x=1000, novelty_graph_y=1000):
     sg.theme(theme)
-    menu_def = [['&Application', ['E&xit']],
+    menu_def = [['&Application', ['&Theme', ['DarkGrey4', 'DarkGrey9', 'GrayGrayGray', 'TealMono'],'E&xit']],
                 ['&Help', ['&About']]]
     right_click_menu_def = [[], ['Edit Me', 'Versions', 'Nothing', 'More Nothing', 'Exit']]
 
@@ -24,6 +24,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
             [sg.Push(), sg.Column(layout=[
                 [sg.Text("Enter the largest natural\nnumber to reach: ")],
                 [sg.Input(key='novelty input', size=(10, 1), default_text='250'), sg.Button('Show', key='generate novelties')]]), sg.Push()],
+            [sg.Push(), sg.Button('Natural\nOrdering', s=(8, 2), font='Helvetica 10 bold'), sg.Button('Novelty\nOrdering', s=(8, 2)), sg.Push()],
             [sg.Push(), sg.Button('Oridinal to Prime\nConversion Chart', k='-SHOW CHART-', s=(14, 2)), sg.Push()],
         ], expand_x=True
     )
@@ -35,7 +36,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
 # Beginning of Sieve Layout
     sieve_graph_layout = [
         sg.Graph((sieve_graph_x, sieve_graph_y), (0, sieve_graph_y), (sieve_graph_x, 0),
-                 background_color='lavender', key='sieve graph', expand_y=True, enable_events=True)  # colour AliceBlue
+                 background_color='#D0D0D0', key='sieve graph', expand_y=True, enable_events=True)  # colour AliceBlue
     ]
     
     sieve_size_selection_layout = [
@@ -55,8 +56,8 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
     tick_positions = ['1/4', '1/2', '1', '2', '4', '8', '16', ' 32']
     speed_slider_layout = [
         [sg.Text("Set Animation Speed:", font='Helvetica 10 bold')],
-        [sg.Slider(range=(0.25, 7), orientation="h", size=(32, 20), default_value=2, key="sieve speed", enable_events=True, disable_number_display=True)],  # 4, 32
-        [sg.Text(f"{tick_positions[i]}x".center(4), background_color='lavender', text_color='black') for i in range(len(tick_positions))],
+        [sg.Slider(range=(0.25, 7), orientation="h", size=(31, 20), default_value=2, key="sieve speed", enable_events=True, disable_number_display=True)],  # 4, 32
+        [sg.Text(f"{tick_positions[i]}x".ljust(5), font='Helvetica 8 bold') for i in range(len(tick_positions))],
     ]
 
 
@@ -115,9 +116,9 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
                             ),
                 ]]
 
-    # layout[-1].append(sg.Sizegrip())
+    layout[-1].append(sg.Sizegrip())
     window = sg.Window('Primes and Novelties', layout, right_click_menu=right_click_menu_def,
                        right_click_menu_tearoff=True, grab_anywhere=True, resizable=True, margins=(0, 0),
-                       finalize=True, keep_on_top=False)
+                       finalize=True, keep_on_top=False, font='Helvetica 10 bold')
     window.set_min_size(window.size)
     return window

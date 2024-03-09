@@ -63,6 +63,8 @@ def generate_up_to(max_value, display=False):
     global primes
     max_value = int(max_value)
     factorizations = {}
+    the_novelties = {}
+    the_novelties[1] = 'e'
     if display:
         print(f'largest known prime: {primes[-1]}')
     primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 \
@@ -74,12 +76,11 @@ def generate_up_to(max_value, display=False):
                                 ['Ordinal:', 'Prime:'],
                                 cutoff=25)
 
-    the_novelties = ['e']
+    
     for i in range(2, max_value + 1):
         novelty, factors = generate_single(i)
         factorizations[i] = factors
-        the_novelties.append(novelty)
-
+        the_novelties[i] = novelty
 
     return the_novelties, factorizations
 

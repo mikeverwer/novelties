@@ -15,7 +15,7 @@ superscript_result = convert_to_unicode(input_char, subscript=False)
 print("Subscript:", subscript_result)  # Output: ₂
 print("Superscript:", superscript_result)  # Output: ²
 
-def convert_to_superscript(char):
+def superscript(char):
     if len(char) == 1 and char.isdigit():
         superscript_digits = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
         unicode_superscript = char.translate(superscript_digits)
@@ -25,6 +25,6 @@ def convert_to_superscript(char):
 
 # Example usage:
 input_char = "2"
-superscript_result = convert_to_superscript(input_char)
+superscript_result = superscript(input_char)
 
 print("Superscript:", superscript_result)  # Output: ²
