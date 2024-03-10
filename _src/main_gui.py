@@ -21,7 +21,6 @@ novelty_graph_x = 1000
 novelty_graph_y = 20000
 sieve_font = 'Courier 14'
 novelty_font = 'Courier 14'
-novelty_objects_NatKey, novelty_objects_NovKey = {}, {}
 
 sieve_animation_steps = {'find coordinates': False,
                          'draw numbers': False,
@@ -82,12 +81,13 @@ def conversion_chart_window(chart_string, longest):
     return window
 
 
-def make_novelty_objects(graph_width: int | float, longest: int, largest: int, em: int, novelties: dict[str], factors: dict[dict[int: int]], ):
+def make_novelty_objects(graph_width: int | float, longest: int, largest: int, em: int, novelties: dict[str], factors: dict[dict[int: int]]):
         print(f'[LOG] Building co-ordinates.')
         # Initialzes objects to a graph
         column_chars = longest  # was + 2
-        pixel_width = column_chars * em
-        number_of_columns = ((graph_width) // pixel_width) + 1
+        pixel_width = column_chars * (em) * 0.7
+        print(pixel_width)
+        number_of_columns = ((graph_width) // pixel_width)
         # rows = (largest // number_of_columns) + 1
         numbers = [i for i in range(2, largest + 1)]
 
@@ -97,52 +97,54 @@ def make_novelty_objects(graph_width: int | float, longest: int, largest: int, e
         for index, number in enumerate(numbers):
             row = index // number_of_columns + 1
             column = index % number_of_columns + 1
-            coords = ((column * pixel_width) - (pixel_width // 2) - em, row * 3.75 * em)
+            coords = (em + (column * pixel_width) - (pixel_width / 2), row * 3.75 * em)
             value_object = go.NoveltyObject(natural=number, novelty=novelties[number], coord=coords, row=row, column=column, factorization=factors[number], hitbox=None)
             value_object.hitbox = value_object.make_hitbox(em)
             NatKey[number] = value_object
             NovKey[novelties[number]] = value_object
         
-        # sort NovKey
+        # sort NovKey and reassign coordinates based on new order
         sorted_dict = dict(sorted(NovKey.items(), key=lambda x: (x[0].count('•'), [int(part) for part in x[0].split('•')])))
+        # for index, key, value in enumerate(sorted_dict):
+        #     row = index // number_of_columns + 1
+        #     column = index % number_of_columns + 1
+        #     coords = (em + (column * pixel_width) - (pixel_width / 2), row * 3.75 * em)
+        #     value.coord = coords
+        #     value.hitbox = value_object.make_hitbox(em)
+
         NovKey = sorted_dict
-        for key, value in sorted_dict.items():
-            print(f"{key}: {value}")
 
         return NatKey, NovKey
 
 
-
-def create_novelties(window, values, nat_dictionary: dict[go.NoveltyObject] = None, nov_dictionary: dict[go.NoveltyObject] = None, 
-                     ordering='novelty', steps=None, em=16, ids=None):
+def draw_novelties(window, values, nat_dictionary: dict[int] = None, nov_dictionary: dict[go.NoveltyObject] = None, ordering='novelty', pt=16):
     global primes
     graph = window['novelty graph']
-    # Steps: 
-    # 1) generate novelties up to N
-    # 2) find line height and column width from font size and largest novelty.
-    # 3) draw bars
-    # 4) draw the text. utf-8 pls.
-    # primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 else primes
-
-    # biggest = int(values['novelty input'])
-    # novelties, factorizations = gn.generate_up_to(biggest)
-    # longest = max(len(novelties[item]) for item in novelties)
-    # novelty_objects_NatKey, novelty_objects_NovKey = make_novelty_objects(novelty_graph_x, longest, biggest, em, novelties, factorizations)
-
     # draw novelties
+    print(f'[LOG] Drawing novelties.')
     if ordering == 'natural':
         for key, value in nat_dictionary.items():
-            graph.draw_text(text=f"{str(value.natural) : ^{value.length}}\n{str(value.novelty) : ^{value.length}}", location=value.coord, font='Courier 14 bold')
+            graph.draw_text(text=f"{str(value.natural) : ^{value.length}}\n{str(value.novelty) : ^{value.length}}", location=value.coord, font=f'Courier {pt} bold')
+            draw_box(value, graph)
     elif ordering == 'novelty':
         i = 2
         for key, value in nov_dictionary.items():
             to_print = f"{str(key) : ^{value.length}}\n{str(value.natural) : ^{value.length}}"
             coordinate = nat_dictionary[i].coord
-            print(to_print)
-            # graph.draw_text(str(key), location=value.coord, font = 'Courier 14 bold')
-            graph.draw_text(text=to_print, location=coordinate, font='Courier 14 bold')
+            graph.draw_text(text=to_print, location=coordinate, font=f'Courier {pt} bold')
+            draw_box(nat_dictionary[i], graph)
             i += 1
-            window.refresh()
+
+
+def draw_box(thing, graph, box_colour='black', line_width=2):
+    # get geometry
+    bottom_left, bottom_right, top_right, top_left = thing.full_hitbox()
+
+    # draw
+    graph.draw_line(bottom_left, bottom_right, box_colour, width=line_width)
+    graph.draw_line(bottom_left, top_left, box_colour, width=line_width)
+    graph.draw_line(top_right, top_left, box_colour, width=line_width)
+    graph.draw_line(top_right, bottom_right, box_colour, width=line_width)
 
 
 def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
@@ -191,7 +193,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
 
         return colour_name
 
-    def draw_box(thing):
+    def draw_box(thing, graph=graph):
         if outline_ids is not None:  # remove previous outline outline
                 for outline_id in outline_ids:
                     graph.delete_figure(outline_id)
@@ -296,7 +298,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
                 primes_so_far.append(prime_value)
                 prime_obj.factors.append(prime_value)
                 window['found primes'].update(value=uprint.column_print(primes_so_far, 5, string=True))
-                draw_box(prime_obj)
+                draw_box(prime_obj, graph)
 
                 # move to next step
                 if sieve_animation_steps['hurry up'] is None:  # still need to scratch
@@ -317,8 +319,6 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
                 print['[LOG] ended here']
                 sieve_animation_steps['box prime'] = False
                 sieve_animation_steps['finished'] = True
-
-
 
         else:  # no primes left to find, finish
             print(f"[LOG] Nothing left to box.")
@@ -359,7 +359,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
     elif sieve_animation_steps['hurry up']:
         for i, sieve_object in enumerate(sieve_value_objects):
             if sieve_object.is_prime:
-                draw_box(sieve_object)
+                draw_box(sieve_object, graph)
                 sieve_object.is_prime = False
                 primes_so_far.append(i + 2)
                 sieve_object.factors.append(sieve_object.value)
@@ -375,6 +375,7 @@ def main():
     main_window = mk.make_window(sg.theme('DarkGrey4'), sieve_graph_x, sieve_graph_y, novelty_graph_x, novelty_graph_y)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
+    novelty_graph = main_window['novelty graph']
     global animate_sieve
     global animation_speed_sieve
     global primes_so_far
@@ -386,6 +387,7 @@ def main():
     sieve_selection_box = None
     window = main_window
     chart_open: bool = False
+    novelty_objects_NatKey, novelty_objects_NovKey = None, None
 
     # This is an Event Loop
     while True:
@@ -405,17 +407,36 @@ def main():
 
     # ----- Novelty Tab -----------------------------------------------------------------------------
         elif event == 'generate novelties':
+            print("[LOG] Clicked Build.")
             try: 
+                novelty_graph.erase()
                 biggest = int(values['novelty input'])
                 novelties, factorizations = gn.generate_up_to(biggest)
                 longest = max(len(novelties[item]) for item in novelties)
-                em = 16
+                novelty_font = int(values['novelty font'])
+                em = pt_to_px(novelty_font)
+                print(em)
+                order = 'novelty' if values['novelty order'] else 'natural'
+                # reset variables
                 novelty_objects_NatKey, novelty_objects_NovKey = make_novelty_objects(novelty_graph_x, longest, biggest, em, novelties, factorizations)
-                create_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, 'novelty')
-            except ValueError:
+                draw_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, order, pt=novelty_font)
+            except ValueError as ve:
+                print(f"[ERROR]: Could not get values from window.\n{ve}")
                 pass
 
+        elif event.endswith('order'):
+            print(f"[LOG] Clicked {event}")
+            order = event.split()[0]
+            novelty_graph.erase()
+            if novelty_objects_NatKey is not None and novelty_objects_NovKey is not None:
+                novelty_font = int(values['novelty font'])
+                draw_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, order, pt=novelty_font)
+            else:
+                event = 'generate novelties'
+
+
         elif event == '-SHOW CHART-':
+            print(f"[LOG] Clicked {event}")
             if chart_open:
                 chart_window.close()
             try:
@@ -431,6 +452,7 @@ def main():
 
     # ----- Sieve Tab -------------------------------------------------------------------------------
         elif event == 'go-sieve':
+            print(f"[LOG] Clicked {event}")
             try:
                 max_sieve = int(values['sieve input'])
                 text_height_sieve = pt_to_px(int(sieve_font[-2:]))  # calculate text size in pixels
@@ -496,6 +518,7 @@ def main():
             window = mk.make_window(sg.theme(), sieve_graph_y=sieve_graph_y)
 
         elif event == 'sieve graph':  # display info about value at coords
+            print(f"[LOG] Clicked {event}")
             if sieve_selection_box is not None:
                 sieve_graph.delete_figure(sieve_selection_box)
             click_x = float(values[event][0])

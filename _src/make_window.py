@@ -19,18 +19,29 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
         ], scrollable=True, vertical_scroll_only=True, size=(novelty_graph_x + 10, 500), key='novelty column', expand_y=True, expand_x=True
     )
 
+    fbc = 'lavender'  # frame background colour
+    novelty_interact_display_frame = sg.Frame(layout=[
+            [sg.T('Value:'.ljust(20), k='novelty clicked value', font='Helvetica 12 bold', background_color=fbc, text_color='black')],
+            [sg.T('Conversion:'.ljust(20), k='novelty clicked factors', font='Helvetica 12 bold', background_color=fbc, text_color='black')]
+            ],
+                title='', background_color='lavender', relief='solid', vertical_alignment='bottom')
+
     left_column = sg.Column(layout=[
             [sg.Text(' The Novelties ', font='Helvetica 18 bold', pad=(5,15), relief='raised', border_width=5)],
             [sg.Push(), sg.Column(layout=[
                 [sg.Text("Enter the largest natural\nnumber to reach: ")],
-                [sg.Input(key='novelty input', size=(10, 1), default_text='250'), sg.Button('Show', key='generate novelties')]]), sg.Push()],
-            [sg.Push(), sg.Button('Natural\nOrdering', s=(8, 2), font='Helvetica 10 bold'), sg.Button('Novelty\nOrdering', s=(8, 2)), sg.Push()],
+                [sg.Input(key='novelty input', size=(10, 1), default_text='250'), sg.Button('Build', key='generate novelties')],
+                [sg.T('Font Size:'), sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=14, k='novelty font', enable_events=True, readonly=True)]
+                ])
+            ],
+            [sg.Radio('Natural\nOrdering', 'RADIO1', k='natural order', default=True, enable_events=True), sg.Radio('Novelty\nOrdering', 'RADIO1', k='novelty order', enable_events=True)],
+            [sg.Push(), novelty_interact_display_frame, sg.Push()],
             [sg.Push(), sg.Button('Oridinal to Prime\nConversion Chart', k='-SHOW CHART-', s=(14, 2)), sg.Push()],
         ], expand_x=True
     )
 
     novelties_layout = [
-        [sg.vtop(left_column), sg.Stretch(), novelty_graph_column, sg.T('')]
+        [sg.vtop(left_column), sg.VerticalSeparator(), sg.Stretch(), novelty_graph_column, sg.T('')]
     ]
     
 # Beginning of Sieve Layout

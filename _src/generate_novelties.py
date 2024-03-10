@@ -62,21 +62,20 @@ def generate_single(value: int):
 def generate_up_to(max_value, display=False):
     global primes
     max_value = int(max_value)
-    factorizations = {}
-    the_novelties = {}
-    the_novelties[1] = 'e'
+    factorizations = {1: None}
+    the_novelties = {1: '0'}
     if display:
         print(f'largest known prime: {primes[-1]}')
-    primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 \
-        else primes
+    # primes = primes + soe.sieve_of_eratosthenes(max_value, start=primes[-1], show=False) if max_value > primes[-1] and max_value > 100 \
+    #     else primes
+    primes = soe.sieve_of_eratosthenes(max_value, show=False)
     if display:
         prime_ordinals = [i for i in range(1, len(primes) + 1)]
         print('\nPrime to Prime Ordinal conversion chart:')
-        uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes],
+        uprint.multi_list_print([['0'] + prime_ordinals, ['1'] + primes],
                                 ['Ordinal:', 'Prime:'],
                                 cutoff=25)
 
-    
     for i in range(2, max_value + 1):
         novelty, factors = generate_single(i)
         factorizations[i] = factors
