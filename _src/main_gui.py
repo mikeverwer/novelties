@@ -16,7 +16,7 @@ colours_dict = colours.dict_colours()
 primes = soe.primes_up_to_100()
 
 sieve_graph_x = 1000
-sieve_graph_y = 30000
+sieve_graph_y = 10000
 novelty_graph_x = 1000
 novelty_graph_y = 20000
 sieve_font = 'Courier 14'
@@ -61,7 +61,8 @@ def reset_globals(speed=None):
 
 
 def pt_to_px(pt: int):
-    return round((pt / 72) * 96)
+    return int(pt)
+    # return round((pt / 72) * 96)
 
 
 def super(char):
@@ -85,8 +86,7 @@ def make_novelty_objects(graph_width: int | float, longest: int, largest: int, e
         print(f'[LOG] Building co-ordinates.')
         # Initialzes objects to a graph
         column_chars = longest  # was + 2
-        pixel_width = column_chars * (em) * 0.7
-        print(pixel_width)
+        pixel_width = column_chars * (em)
         number_of_columns = ((graph_width) // pixel_width)
         # rows = (largest // number_of_columns) + 1
         numbers = [i for i in range(1, largest + 1)]
@@ -97,29 +97,32 @@ def make_novelty_objects(graph_width: int | float, longest: int, largest: int, e
         for index, number in enumerate(numbers):
             row = index // number_of_columns + 1
             column = index % number_of_columns + 1
-            coords = (em + (column * pixel_width) - (pixel_width / 2), row * 3.75 * em)
-            value_object = go.NoveltyObject(natural=number, novelty=novelties[number], coord=coords, row=row, column=column, factorization=factors[number], hitbox=None)
-            value_object.hitbox = value_object.make_hitbox(em)
-            NatOrd.append(value_object)
-            NovOrd.append(value_object)  # copy to be sorted
+            coords = (em + (column * pixel_width) - (pixel_width / 2), row * 4 * em)
+            value_object_Na = go.NoveltyObject(natural=number, novelty=novelties[number], coord=coords, row=row, column=column, factorization=factors[number], hitbox=None)
+            value_object_Na.hitbox = value_object_Na.make_hitbox(em)
+            value_object_No = go.NoveltyObject(natural=number, novelty=novelties[number], coord=coords, row=row, column=column, factorization=factors[number], hitbox=None)
+            value_object_No.hitbox = value_object_No.make_hitbox(em)
+            NatOrd.append(value_object_Na)
+            NovOrd.append(value_object_No)  # copy to be sorted
         
         # sort NovKey and reassign coordinates based on new order
-        sorted_list = list(sorted(NovOrd, key=lambda x: (x.novelty[0].count('•'), [int(part) for part in x.novelty[0].split('•')])))
+        sorted_list = sorted(NovOrd, key=lambda s: (s.novelty.count('•'), int(s.novelty.replace('•', ''))))
         for index, value in enumerate(sorted_list):
             row = index // number_of_columns + 1
             column = index % number_of_columns + 1
-            coords = (em + (column * pixel_width) - (pixel_width / 2), row * 3.75 * em)
+            coords = (em + (column * pixel_width) - (pixel_width / 2), row * 4 * em)
             value.coord = coords
-            value.hitbox = value_object.make_hitbox(em)
+            value.hitbox = value.make_hitbox(em)
 
         NovOrd = sorted_list
 
         return NatOrd, NovOrd
 
 
-def draw_novelties(window, values, nat_list: list[int] = None, nov_list: list[go.NoveltyObject] = None, ordering='novelty', pt=16):
+def draw_novelties(window, values, nat_list: list[go.NoveltyObject] = None, nov_list: list[go.NoveltyObject] = None, ordering='novelty', pt=16):
     global primes
     graph = window['novelty graph']
+    graph.erase()
     # draw novelties
     print(f'[LOG] Drawing novelties.')
     if ordering == 'natural':
@@ -161,14 +164,14 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
         global sieve_value_objects
         column_chars = len(str(largest)) + 1  # was + 2
         pixel_width = column_chars * em
-        number_of_columns = (950 // pixel_width)
+        number_of_columns = (975 // pixel_width)
         # rows = (largest // number_of_columns) + 1
         numbers = [i for i in range(2, largest + 1)]
 
         for index, number in enumerate(numbers):
             row = index // number_of_columns + 1
             column = index % number_of_columns + 1
-            coords = (column * pixel_width, row * 1.5 * em)
+            coords = ((column * pixel_width), row * 2 * em)
             value_object = go.SieveGraphObject(value=number, coord=coords, row=row, column=column, is_prime=True,
                                                factors=[], colours=[], hitbox=None)
             value_object.hitbox = value_object.make_hitbox(em)
@@ -372,7 +375,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
 
 
 def main():
-    main_window = mk.make_window(sg.theme('DarkGrey4'), sieve_graph_x, 10000, novelty_graph_x, novelty_graph_y)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
+    main_window = mk.make_window(sg.theme('DarkGrey4'), 1000, 200, sieve_graph_x, 10_000, novelty_graph_x, novelty_graph_y)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
     novelty_graph = main_window['novelty graph']
@@ -389,6 +392,7 @@ def main():
     window = main_window
     chart_open: bool = False
     novelty_objects_NatKey, novelty_objects_NovKey = None, None
+    max_value = None
 
     # This is an Event Loop
     while True:
@@ -438,7 +442,8 @@ def main():
             if chart_open:
                 chart_window.close()
             try:
-                max_value = int(values['novelty input'])
+                if max_value is None:
+                    max_value = int(values['novelty input'])
                 primes = soe.sieve_of_eratosthenes(max_value, show=False)  # Build list of primes, useful for primality testing and converting
                 prime_ordinals = [i for i in range(1, len(primes) + 1)]
                 chart = uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes], cutoff=10, give_string=True, headings_every_row=False)
@@ -454,32 +459,36 @@ def main():
             try:
                 max_sieve = int(values['sieve input'])
                 text_height_sieve = pt_to_px(int(sieve_font[-2:]))  # calculate text size in pixels
-                sieve_column_width = len(str(max_sieve)) + 2
-                columns = 900 // (sieve_column_width * text_height_sieve)
+                sieve_column_width = len(str(max_sieve)) + 1
+                columns = 975 // (sieve_column_width * text_height_sieve)
                 rows = (max_sieve // columns) + 1
                 primes_so_far = []
                 reset_globals(speed=values['sieve speed'])
                 # check graph size, remake if too small
-                if rows <= (sieve_graph_y // text_height_sieve) + text_height_sieve:  # enough rows
+                required_size = (rows + 1) * (2 * text_height_sieve)
+                available_rows = (sieve_graph_y // text_height_sieve) + 1
+                print(f'[LOG] {rows} required rows', end=', ')
+                print(f"{required_size = }, {sieve_graph_y = }", end=', ')
+                print(f"{available_rows = }")
+                if rows <= (sieve_graph_y // (text_height_sieve * 2)) + 1:  # enough rows
                     window['found primes'].update(value='None')
                     sieve_graph.erase()
                     outline_ids = None
                     sieve_animation_steps['finished'] = False
                     animate_sieve = True
                     sieve_animation_steps['find coordinates'] = True
-                else:
-                    # event = sg.popup('Warning', 'Will reset the window.', keep_on_top=True, grab_anywhere=True)
-                    event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
-                                     custom_text=('Continue', 'Cancel'), keep_on_top=True)
-
-                    print(f'button: {event}')
-                    print((sieve_graph_y // text_height_sieve) + text_height_sieve)
-                    required_size = (rows + 1) * text_height_sieve
-                    print(f"{required_size = }")
-                    if event == 'Continue':
-                        window.close()
-                        window = mk.make_window(sg.theme(), sieve_graph_y=required_size)
-                        sieve_graph_y = required_size
+                else:  
+                    if required_size > 32_500:  # max canvas size
+                        sg.popup('Can not make a large enough canvas.\nTry selecting a smaller font size, or input a lower value.', title='Warning', custom_text=('Cancel'), keep_on_top=True)
+                        pass
+                    else:    
+                        popup_event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
+                                        custom_text=('Continue', 'Cancel'), keep_on_top=True)
+                        if popup_event == 'Continue':
+                            window.close()
+                            window = mk.make_window(sg.theme(), sieve_default=max_sieve, sieve_graph_y=required_size, sieve_size=text_height_sieve)
+                            sieve_graph_y = required_size
+                            window.refresh()
             except ValueError:
                 pass
 

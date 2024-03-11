@@ -11,6 +11,7 @@ class SieveGraphObject:
         self.hitbox = hitbox
 
     def make_hitbox(self, char_size):
+        char_size *= 1.1
         bottom_left = (
             self.coord[0] - len(str(self.value)) * (char_size / 2) , self.coord[1] + (char_size / 2) - 1)
         top_right = (
@@ -61,9 +62,9 @@ class NoveltyObject:
     
     def make_hitbox(self, char_size):
         bottom_left = (
-            self.coord[0] - (self.length * (char_size / 2)), self.coord[1] + char_size - 1)
+            self.coord[0] - (self.length * (char_size / 2)), self.coord[1] + (char_size * 2))
         top_right = (
-            self.coord[0] + (self.length * (char_size / 2)), self.coord[1] - char_size - 1)
+            self.coord[0] + (self.length * (char_size / 2)), self.coord[1] - (char_size * 2))
         return bottom_left, top_right
     
     def full_hitbox(self, xoffset: int = 0, yoffset: int = 0, offset: None | int = None):
@@ -80,7 +81,8 @@ class NoveltyObject:
         return self.novelty < other.novelty
     
     def __repr__(self):
-        return f"NoveltyObject (natural={self.natural}, novelty={self.novelty}, coord={self.coord}, factorization={self.factorization}, length={self.length}, hitbox={self.hitbox})"
+        return f"NoveltyObject (natural={self.natural}, novelty={self.novelty})"
+        # return f"NoveltyObject (natural={self.natural}, novelty={self.novelty}, coord={self.coord}, factorization={self.factorization}, length={self.length}, hitbox={self.hitbox})"
     
 
 def main():

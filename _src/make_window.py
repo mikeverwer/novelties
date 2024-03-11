@@ -2,7 +2,7 @@ import usefull_prints as uprint
 from main_gui import sg, primes_so_far
 
 # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
-def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelty_graph_x=1000, novelty_graph_y=1000):
+def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_graph_x=1000, sieve_graph_y=1000, novelty_graph_x=1000, novelty_graph_y=1000, sieve_size = '14', novelty_size='14'):
     sg.theme(theme)
     menu_def = [['&Application', ['&Theme', ['DarkGrey4', 'DarkGrey9', 'GrayGrayGray', 'TealMono'],'E&xit']],
                 ['&Help', ['&About']]]
@@ -30,8 +30,8 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
             [sg.Text(' The Novelties ', font='Helvetica 18 bold', pad=(5,15), relief='raised', border_width=5)],
             [sg.Push(), sg.Column(layout=[
                 [sg.Text("Enter the largest natural\nnumber to reach: ")],
-                [sg.Input(key='novelty input', size=(10, 1), default_text='250'), sg.Button('Build', key='generate novelties')],
-                [sg.T('Font Size:'), sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=14, k='novelty font', enable_events=True, readonly=True)]
+                [sg.Input(key='novelty input', size=(10, 1), default_text=str(novelty_default)), sg.Button('Build', key='generate novelties')],
+                [sg.T('Font Size:'), sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=novelty_size, k='novelty font', enable_events=True, readonly=True)]
                 ])
             ],
             [sg.Radio('Natural\nOrdering', 'RADIO1', k='natural order', default=True, enable_events=True), sg.Radio('Novelty\nOrdering', 'RADIO1', k='novelty order', enable_events=True)],
@@ -52,7 +52,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
     
     sieve_size_selection_layout = [
         [sg.T('Text Size ', font='Helvetica 10 bold')], 
-        [sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=14, k='sieve font', enable_events=True, readonly=True)],
+        [sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=sieve_size, k='sieve font', enable_events=True, readonly=True)],
         [sg.T('')]
     ]
     
@@ -74,7 +74,7 @@ def make_window(theme='Default1', sieve_graph_x=1000, sieve_graph_y=1000, novelt
 
     sieve_in_go_clear_pause_layout = [
         [sg.Text('  To which number shall we search?', font=('Helvetica', 16))],
-        [sg.T(''), sg.Input(key='sieve input', size=(10, 1), default_text='200'),
+        [sg.T(''), sg.Input(key='sieve input', size=(10, 1), default_text=str(sieve_default)),
          sg.Button('  Begin  ', font='bold', key='go-sieve', button_color='sea green'),
          sg.Button('Clear', font='bold', k='clear sieve', button_color='firebrick3'),
          sg.Button('Pause/Play', font='bold', k='pause sieve', button_color='gray50'),
