@@ -2,7 +2,7 @@ import usefull_prints as uprint
 from main_gui import sg, primes_so_far
 
 # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
-def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_graph_x=1000, sieve_graph_y=1000, novelty_graph_x=1000, novelty_graph_y=1000, sieve_size = '14', novelty_size='14'):
+def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_graph_x=1000, sieve_graph_y=10000, novelty_graph_x=1000, novelty_graph_y=10000, sieve_size = '14', novelty_size='14'):
     sg.theme(theme)
     menu_def = [['&Application', ['&Theme', ['DarkGrey4', 'DarkGrey9', 'GrayGrayGray', 'TealMono'],'E&xit']],
                 ['&Help', ['&About']]]

@@ -142,6 +142,8 @@ def main():
             graph = window['-GRAPH-']  # type: sg.Graph
             graph.draw_circle(values['-GRAPH-'], fill_color='yellow', radius=20)
             print("[LOG] Circle drawn at: " + str(values['-GRAPH-']))
+        elif event == 'Erase':
+            graph.erase()
         elif event == "Open Folder":
             print("[LOG] Clicked Open Folder!")
             folder_or_file = sg.popup_get_folder('Choose your folder', keep_on_top=True)

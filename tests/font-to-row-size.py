@@ -23,8 +23,6 @@ def update_graph(window, values):
         graph.draw_line(start_px, end_px)
 
 
-
-
 graph_height = 10_000
 rows_per_pt = [416, 350, 317, 277, 246, 229, 208, 190, 179, 166]
 points = [2 * i for i in range(6, 16)]

@@ -18,7 +18,7 @@ primes = soe.primes_up_to_100()
 sieve_graph_x = 1000
 sieve_graph_y = 10000
 novelty_graph_x = 1000
-novelty_graph_y = 20000
+novelty_graph_y = 10000
 sieve_font = 'Courier 14'
 novelty_font = 'Courier 14'
 
@@ -375,7 +375,8 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
 
 
 def main():
-    main_window = mk.make_window(sg.theme('DarkGrey4'), 1000, 200, sieve_graph_x, 10_000, novelty_graph_x, novelty_graph_y)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
+    current_theme = 'DarkGray4'
+    main_window = mk.make_window(current_theme, 1000, 200, sieve_graph_x, 10_000, novelty_graph_x, novelty_graph_y)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
     novelty_graph = main_window['novelty graph']
@@ -397,6 +398,7 @@ def main():
     # This is an Event Loop
     while True:
         event, values = window.read(timeout=1000 // update_interval)
+        sieve_graph = window['sieve graph']
 
         # log events and handle closing
         if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
@@ -485,10 +487,9 @@ def main():
                         popup_event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
                                         custom_text=('Continue', 'Cancel'), keep_on_top=True)
                         if popup_event == 'Continue':
-                            window.close()
-                            window = mk.make_window(sg.theme(), sieve_default=max_sieve, sieve_graph_y=required_size, sieve_size=text_height_sieve)
                             sieve_graph_y = required_size
-                            window.refresh()
+                            window.close()
+                            window = mk.make_window(current_theme, sieve_default=max_sieve, sieve_graph_y=required_size, sieve_size=text_height_sieve)
             except ValueError:
                 pass
 
@@ -521,11 +522,6 @@ def main():
             window['found primes'].update(value='None')
             sieve_graph.erase()
             reset_globals()
-
-        elif event == 'OK':
-            print("[LOG] Rebuild the window.")
-            window.close()
-            window = mk.make_window(sg.theme(), sieve_graph_y=sieve_graph_y)
 
         elif event == 'sieve graph':  # display info about value at coords
             print(f"[LOG] Clicked {event}")
