@@ -47,11 +47,13 @@ class SieveGraphObject:
 
 
 class NoveltyObject:
-    def __init__(self, natural: int, novelty: str, coord: tuple | list, row: int, column: int, factorization: str, hitbox):
+    def __init__(self, natural: int, novelty: str, coord: tuple | list, row: int, column: int, factors: dict, hitbox: tuple):
         self.natural = natural
         self.novelty = novelty
         self.coord = coord
-        self.factorization = factorization
+        self.row = row
+        self.column = column
+        self.factors = factors
         self.length = self.calculate_length()
         self.hitbox = hitbox
 
@@ -60,11 +62,11 @@ class NoveltyObject:
         na_len = len(str(self.natural))
         return max(nov_len, na_len)
     
-    def make_hitbox(self, char_size):
+    def make_hitbox(self, char_size, longest):
         bottom_left = (
-            self.coord[0] - (self.length * (char_size / 2)), self.coord[1] + (char_size * 2))
+            self.coord[0] - (longest * (char_size / 2)), self.coord[1] + (char_size * 2))
         top_right = (
-            self.coord[0] + (self.length * (char_size / 2)), self.coord[1] - (char_size * 2))
+            self.coord[0] + (longest * (char_size / 2)), self.coord[1] - (char_size * 2))
         return bottom_left, top_right
     
     def full_hitbox(self, xoffset: int = 0, yoffset: int = 0, offset: None | int = None):
@@ -76,6 +78,19 @@ class NoveltyObject:
         top_right = (self.hitbox[1][0] + xoffset, self.hitbox[1][1] - yoffset)
         top_left = (self.hitbox[0][0] - xoffset, self.hitbox[1][1] - yoffset)
         return bottom_left, bottom_right, top_right, top_left
+    
+    def is_hit(self, click, xoffset: int = 0, yoffset: int = 0, offset: None | int = None):
+        if offset is not None:
+            xoffset = offset
+            yoffset = offset
+        dx = abs(click[0] - self.coord[0])
+        dy = abs(click[1] - self.coord[1])
+        half_length = abs(self.hitbox[0][0] - self.hitbox[1][0]) / 2
+        half_height = abs(self.hitbox[0][1] - self.hitbox[1][1]) / 2
+        if dx - half_length <= xoffset and dy - half_height <= yoffset:
+            return True
+        else:
+            return False
     
     def __lt__(self, other):
         return self.novelty < other.novelty

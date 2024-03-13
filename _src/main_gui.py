@@ -65,13 +65,16 @@ def pt_to_px(pt: int):
     # return round((pt / 72) * 96)
 
 
-def super(char):
-    if len(char) == 1 and char.isdigit():
-        superscript_digits = str.maketrans("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹")
-        unicode_superscript = char.translate(superscript_digits)
-        return unicode_superscript
-    else:
-        raise ValueError("Input must be a single-digit string.")
+def super(number):
+    # Define a dictionary mapping regular digits to their superscript equivalents
+    superscript_digits = {
+        '0': '\u2070', '1': '\u00B9', '2': '\u00B2', '3': '\u00B3',
+        '4': '\u2074', '5': '\u2075', '6': '\u2076', '7': '\u2077',
+        '8': '\u2078', '9': '\u2079'
+    }
+    # Convert the number to a string
+    number_str = str(number)
+    return ''.join(superscript_digits.get(digit, digit) for digit in number_str)
 
 
 def conversion_chart_window(chart_string, longest):
@@ -98,10 +101,10 @@ def make_novelty_objects(graph_width: int | float, longest: int, largest: int, e
             row = index // number_of_columns + 1
             column = index % number_of_columns + 1
             coords = (em + (column * pixel_width) - (pixel_width / 2), row * 4 * em)
-            value_object_Na = go.NoveltyObject(natural=number, novelty=novelties[number], coord=coords, row=row, column=column, factorization=factors[number], hitbox=None)
-            value_object_Na.hitbox = value_object_Na.make_hitbox(em)
-            value_object_No = go.NoveltyObject(natural=number, novelty=novelties[number], coord=coords, row=row, column=column, factorization=factors[number], hitbox=None)
-            value_object_No.hitbox = value_object_No.make_hitbox(em)
+            value_object_Na = go.NoveltyObject(natural=number, novelty=novelties[number], coord=coords, row=row, column=column, factors=factors[number], hitbox=None)
+            value_object_Na.hitbox = value_object_Na.make_hitbox(em, longest)
+            value_object_No = go.NoveltyObject(natural=number, novelty=novelties[number], coord=coords, row=row, column=column, factors=factors[number], hitbox=None)
+            value_object_No.hitbox = value_object_No.make_hitbox(em, longest)
             NatOrd.append(value_object_Na)
             NovOrd.append(value_object_No)  # copy to be sorted
         
@@ -112,7 +115,7 @@ def make_novelty_objects(graph_width: int | float, longest: int, largest: int, e
             column = index % number_of_columns + 1
             coords = (em + (column * pixel_width) - (pixel_width / 2), row * 4 * em)
             value.coord = coords
-            value.hitbox = value.make_hitbox(em)
+            value.hitbox = value.make_hitbox(em, longest)
 
         NovOrd = sorted_list
 
@@ -139,15 +142,19 @@ def draw_novelties(window, values, nat_list: list[go.NoveltyObject] = None, nov_
             i += 1
 
 
-def draw_box(thing, graph, box_colour='black', line_width=2):
+def draw_box(thing, graph, box_colour='black', line_width=2, xoffset=0, yoffset=0, offset=None):
+    if offset is not None:
+            xoffset = offset
+            yoffset = offset 
     # get geometry
-    bottom_left, bottom_right, top_right, top_left = thing.full_hitbox()
+    bottom_left, bottom_right, top_right, top_left = thing.full_hitbox(xoffset=xoffset, yoffset=yoffset)
 
     # draw
-    graph.draw_line(bottom_left, bottom_right, box_colour, width=line_width)
-    graph.draw_line(bottom_left, top_left, box_colour, width=line_width)
-    graph.draw_line(top_right, top_left, box_colour, width=line_width)
-    graph.draw_line(top_right, bottom_right, box_colour, width=line_width)
+    l1 = graph.draw_line(bottom_left, bottom_right, box_colour, width=line_width)
+    l2 = graph.draw_line(bottom_left, top_left, box_colour, width=line_width)
+    l3 = graph.draw_line(top_right, top_left, box_colour, width=line_width)
+    l4 = graph.draw_line(top_right, bottom_right, box_colour, width=line_width)
+    return l1, l2, l3, l4
 
 
 def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
@@ -374,13 +381,48 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
     return outline_ids
 
 
+def check_size(graph_height:int, value: int, char_width: int, lines_per_row: int | float, px: int, get: bool):
+                # checks if the graph will be large enough to display enough items in a given coloumn width
+                columns = 975 // (char_width * px)
+                rows = (value // columns) + 1
+                required_size = (rows + 1) * (lines_per_row * px)
+                available_rows = (graph_height // px) + 1
+                print(f'[LOG] {rows} required rows', end=', ')
+                print(f"{required_size = }, {graph_height = }", end=', ')
+                print(f"{available_rows = }")
+                if get: 
+                    return required_size
+                else: 
+                    return rows <= (graph_height // (px * lines_per_row)) + 1  # enough rows
+
+
+def largest_power_of_2_less_than(n):
+    if n <= 1:
+        return 0  # No power of 2 less than or equal to 1
+    power = 0
+    while n >= 2:
+        n //= 2
+        power += 1
+    return power
+
+
+def convert_factors_to_string(prime_dict):
+    if prime_dict is None:
+        prime_dict = {}
+    factors = []
+    for prime, exponent in prime_dict.items():
+        factors.append(f"{prime}{super(exponent)}")
+    return "\u00B7".join(factors)
+
+
 def main():
     current_theme = 'DarkGray4'
-    main_window = mk.make_window(current_theme, 1000, 200, sieve_graph_x, 10_000, novelty_graph_x, novelty_graph_y)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
+    main_window = mk.make_window(current_theme, 200, 200, sieve_graph_x, 10_000, novelty_graph_x, 10_000)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
     novelty_graph = main_window['novelty graph']
     global sieve_graph_y
+    global novelty_graph_y
     global animate_sieve
     global animation_speed_sieve
     global primes_so_far
@@ -390,6 +432,7 @@ def main():
     text_height_sieve = pt_to_px(int(sieve_font[-2:]))
     outline_ids = None
     sieve_selection_box = None
+    novelty_selection_box = None
     window = main_window
     chart_open: bool = False
     novelty_objects_NatKey, novelty_objects_NovKey = None, None
@@ -399,6 +442,7 @@ def main():
     while True:
         event, values = window.read(timeout=1000 // update_interval)
         sieve_graph = window['sieve graph']
+        novelty_graph = window['novelty graph']
 
         # log events and handle closing
         if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
@@ -411,25 +455,65 @@ def main():
             window.close()
             windows.pop()
             break
+                # max_sieve = int(values['sieve input'])
+                # text_height_sieve = pt_to_px(int(sieve_font[-2:]))  # calculate text size in pixels
+                # sieve_column_width = len(str(max_sieve)) + 1
+                # columns = 975 // (sieve_column_width * text_height_sieve)
+                # rows = (max_sieve // columns) + 1
+                # primes_so_far = []
+                # reset_globals(speed=values['sieve speed'])
+                # # check graph size, remake if too small
+                # required_size = (rows + 1) * (2 * text_height_sieve)
+                # available_rows = (sieve_graph_y // text_height_sieve) + 1
+                # print(f'[LOG] {rows} required rows', end=', ')
+                # print(f"{required_size = }, {sieve_graph_y = }", end=', ')
+                # print(f"{available_rows = }")
+                # if rows <= (sieve_graph_y // (text_height_sieve * 2)) + 1:  # enough rows
+                #     window['found primes'].update(value='None')
+                #     sieve_graph.erase()
+                #     outline_ids = None
+                #     sieve_animation_steps['finished'] = False
+                #     animate_sieve = True
+                #     sieve_animation_steps['find coordinates'] = True
+                # else:  
+                #     if required_size > 32_500:  # max canvas size
+                #         sg.popup('Can not make a large enough canvas.\nTry selecting a smaller font size, or input a lower value.', title='Warning', custom_text=('Cancel'), keep_on_top=True)
+                #         pass
+                #     else:    
+                #         popup_event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
+                #                         custom_text=('Continue', 'Cancel'), keep_on_top=True)
+                #         if popup_event == 'Continue':
+                #             sieve_graph_y = required_size
+                #             window.close()
+                #             window = mk.make_window(current_theme, sieve_default=max_sieve, sieve_graph_y=required_size, sieve_size=text_height_sieve)
 
     # ----- Novelty Tab -----------------------------------------------------------------------------
         elif event == 'generate novelties':
             print("[LOG] Clicked Build.")
-            try: 
-                novelty_graph.erase()
-                biggest = int(values['novelty input'])
-                novelties, factorizations = gn.generate_up_to(biggest)
-                longest = max(len(novelties[item]) for item in novelties)
+            if values['novelty input'].isnumeric():
+                max_novelty = int(values['novelty input'])
                 novelty_font = int(values['novelty font'])
-                em = pt_to_px(novelty_font)
-                print(em)
-                order = 'novelty' if values['novelty order'] else 'natural'
-                # reset variables
-                novelty_objects_NatKey, novelty_objects_NovKey = make_novelty_objects(novelty_graph_x, longest, biggest, em, novelties, factorizations)
-                draw_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, order, pt=novelty_font)
-            except ValueError as ve:
-                print(f"[ERROR]: Could not get values from window.\n{ve}")
-                pass
+                novelty_px = pt_to_px(novelty_font)
+                longest = largest_power_of_2_less_than(max_novelty)
+                novelty_column_width = ((2 * longest) - 1)
+                # check size
+                if check_size(novelty_graph_y, max_novelty, novelty_column_width, 4.5, novelty_px, get=True):  # enough rows, build
+                    novelty_graph.erase()
+                    novelties, factorizations = gn.generate_up_to(max_novelty)
+                    order = 'novelty' if values['novelty order'] else 'natural'
+                    novelty_objects_NatKey, novelty_objects_NovKey = make_novelty_objects(novelty_graph_x, novelty_column_width, max_novelty, novelty_px, novelties, factorizations)
+                    draw_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, order, pt=novelty_font)
+                else:
+                    if required_size > 32_500:  # max canvas size
+                        sg.popup('Can not make a large enough canvas.\nTry selecting a smaller font size, or input a lower value.', title='Warning', custom_text=('Cancel'), keep_on_top=True)
+                        pass
+                    else:    
+                        popup_event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
+                                        custom_text=('Continue', 'Cancel'), keep_on_top=True)
+                        if popup_event == 'Continue':
+                            novelty_graph_y = required_size
+                            window.close()
+                            window = mk.make_window(current_theme, novelty_default=max_novelty, novelty_graph_y=required_size, novelty_size=novelty_px, sieve_default=int(values['sieve input']), sieve_graph_y=sieve_graph_y, sieve_size=int(values[sieve_font]))
 
         elif event.endswith('order'):
             print(f"[LOG] Clicked {event}")
@@ -438,6 +522,29 @@ def main():
             if novelty_objects_NatKey is not None and novelty_objects_NovKey is not None:
                 novelty_font = int(values['novelty font'])
                 draw_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, order, pt=novelty_font)
+
+        elif event == 'novelty graph':
+            print(f"[LOG] Clicked {event}")
+            if novelty_selection_box is not None:
+                for line in novelty_selection_box:
+                    novelty_graph.delete_figure(line)
+            click_x = float(values[event][0])
+            click_y = float(values[event][1])
+            found: bool = False
+            order = novelty_objects_NovKey if values['novelty order'] else novelty_objects_NatKey
+            longest = len(str(values['novelty input']))
+            for value_object in order:
+                if not found:
+                    if value_object.is_hit((click_x, click_y), xoffset=0, yoffset=0):
+                        novelty_selection_box = draw_box(value_object, novelty_graph, box_colour='magenta', line_width=3, xoffset = -6, yoffset=-4)
+                        update_text = f"{'Value:':<{20}}" + f'{value_object.natural:<{longest}}'
+                        window['novelty clicked value'].update(value=update_text)
+                        conversion = convert_factors_to_string(value_object.factors)
+                        update_text = f"{'Conversion:':<{20}}\n" + f"{f'{conversion}':>{longest + 25}}"
+                        window['conversion'].update(value=update_text)
+                        print(f"[LOG] {value_object}")
+                        found = True
+
 
         elif event == '-SHOW CHART-':
             print(f"[LOG] Clicked {event}")
@@ -489,7 +596,7 @@ def main():
                         if popup_event == 'Continue':
                             sieve_graph_y = required_size
                             window.close()
-                            window = mk.make_window(current_theme, sieve_default=max_sieve, sieve_graph_y=required_size, sieve_size=text_height_sieve)
+                            window = mk.make_window(current_theme, novelty_default=int(values['novelty input']), novelty_graph_y=novelty_graph_y, novelty_size=values['novelty font'], sieve_default=max_sieve, sieve_graph_y=required_size, sieve_size=text_height_sieve)
             except ValueError:
                 pass
 

@@ -22,7 +22,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
     fbc = 'lavender'  # frame background colour
     novelty_interact_display_frame = sg.Frame(layout=[
             [sg.T('Value:'.ljust(20), k='novelty clicked value', font='Helvetica 12 bold', background_color=fbc, text_color='black')],
-            [sg.T('Conversion:'.ljust(20), k='novelty clicked factors', font='Helvetica 12 bold', background_color=fbc, text_color='black')]
+            [sg.T('Conversion:'.ljust(20), k='conversion', font='Helvetica 12 bold', background_color=fbc, text_color='black')]
             ],
                 title='', background_color='lavender', relief='solid', vertical_alignment='bottom')
 
