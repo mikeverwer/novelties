@@ -94,7 +94,6 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
          sg.Column(layout=speed_slider_layout), sg.T('', s=(1, 1)),
          sg.Column(layout=sieve_size_selection_layout), sg.T('', s=(1, 1)),
         ],
-        
     ]
 
     sieve_layout += [[sg.Column(
@@ -134,7 +133,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
 
     settings_layout = [
         [sg.Text(' Settings ', font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, p=15),
-         sg.Text('\n  Save Settings', background_color='#1b1b1b', text_color='#dcdcdc', s=(15, 2), enable_events=True), sg.Image(data=save_settings_image, enable_events=True, k='save settings')],
+         sg.Button(image_data=save_settings_image, k='save settings', enable_events=True)],
         [sg.Column(layout=graph_dimension_sliders_layout, background_color='gray', pad=15),
          sg.Column(layout=theme_selection_layout, background_color=bgColour)
         ]
