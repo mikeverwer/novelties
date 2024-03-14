@@ -17,7 +17,7 @@ primes = soe.primes_up_to_100()
 
 sieve_graph_x = 1000
 sieve_graph_y = 10000
-novelty_graph_x = 1000
+novelty_graph_x = 1_200
 novelty_graph_y = 10000
 sieve_font = 'Courier 14'
 novelty_font = 'Courier 14'
@@ -37,7 +37,7 @@ animation_speed_sieve = 1
 sieve_speed_ticks = ['1/4', '1/2', '1', '2', '4', '8', '16', '32']
 
 
-def reset_globals(speed=None):
+def reset_globals(set_interval=1, speed=None):
     global update_interval
     global animation_speed_sieve
     global sieve_animation_steps
@@ -55,7 +55,7 @@ def reset_globals(speed=None):
                              }
     sieve_value_objects = []
     primes_so_far = []
-    update_interval = 1
+    update_interval = set_interval
     scratch_animation_passes = 0
     animation_speed_sieve = speed if speed is not None else 1
 
@@ -171,7 +171,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
         global sieve_value_objects
         column_chars = len(str(largest)) + 1  # was + 2
         pixel_width = column_chars * em
-        number_of_columns = (975 // pixel_width)
+        number_of_columns = ((sieve_graph_x - (em * 2)) // pixel_width)
         # rows = (largest // number_of_columns) + 1
         numbers = [i for i in range(2, largest + 1)]
 
@@ -381,17 +381,17 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
     return outline_ids
 
 
-def check_size(graph_height:int, value: int, char_width: int, lines_per_row: int | float, px: int, get: bool):
+def check_size(graph_height:int, graph_width: int, value: int, char_width: int, lines_per_row: int | float, px: int, get: bool):
                 # checks if the graph will be large enough to display enough items in a given coloumn width
-                columns = 975 // (char_width * px)
+                columns = graph_width // (char_width * px)
                 rows = (value // columns) + 1
-                required_size = (rows + 1) * (lines_per_row * px)
+                required_size = (rows) * (lines_per_row * px)
                 available_rows = (graph_height // px) + 1
                 print(f'[LOG] {rows} required rows', end=', ')
                 print(f"{required_size = }, {graph_height = }", end=', ')
                 print(f"{available_rows = }")
                 if get: 
-                    return required_size
+                    return required_size, rows <= (graph_height // (px * lines_per_row)) + 1  # enough rows
                 else: 
                     return rows <= (graph_height // (px * lines_per_row)) + 1  # enough rows
 
@@ -415,13 +415,18 @@ def convert_factors_to_string(prime_dict):
     return "\u00B7".join(factors)
 
 
+#################################################################################################
+# MAIN
+#################################################################################################
 def main():
     current_theme = 'DarkGray4'
-    main_window = mk.make_window(current_theme, 200, 200, sieve_graph_x, 10_000, novelty_graph_x, 10_000)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
+    main_window = mk.make_window(theme=current_theme, sieve_default=200, novelty_default=200, sieve_graph_x=1_000, sieve_graph_y=3_000, novelty_graph_x=1_200, novelty_graph_y=3_000)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
     novelty_graph = main_window['novelty graph']
+    global sieve_graph_x
     global sieve_graph_y
+    global novelty_graph_x
     global novelty_graph_y
     global animate_sieve
     global animation_speed_sieve
@@ -438,7 +443,19 @@ def main():
     novelty_objects_NatKey, novelty_objects_NovKey = None, None
     max_value = None
 
-    # This is an Event Loop
+    def too_big(columns, pt, lines_per_row):
+        largest_possible = (31_000 // (pt * lines_per_row)) * columns
+        sg.popup(f'Can not make a large enough canvas.\nAt {pt} pt font, the largest value that can be displayed is {largest_possible}\n\nTry selecting a smaller font size, or input a lower value.', title='Warning', custom_text=('    Ok    '), keep_on_top=True)
+
+    def generate_novelties(value: int):
+        novelty_graph.erase()
+        novelties, factorizations = gn.generate_up_to(value)
+        order = 'novelty' if values['novelty order'] else 'natural'
+        NatKey, NovKey = make_novelty_objects(novelty_graph_x, novelty_column_width, value, novelty_px, novelties, factorizations)
+        draw_novelties(window, values, NatKey, NovKey, order, pt=novelty_font)
+        return NatKey, NovKey
+
+    # This is an Event Loop #################################################################################################
     while True:
         event, values = window.read(timeout=1000 // update_interval)
         sieve_graph = window['sieve graph']
@@ -455,39 +472,10 @@ def main():
             window.close()
             windows.pop()
             break
-                # max_sieve = int(values['sieve input'])
-                # text_height_sieve = pt_to_px(int(sieve_font[-2:]))  # calculate text size in pixels
-                # sieve_column_width = len(str(max_sieve)) + 1
-                # columns = 975 // (sieve_column_width * text_height_sieve)
-                # rows = (max_sieve // columns) + 1
-                # primes_so_far = []
-                # reset_globals(speed=values['sieve speed'])
-                # # check graph size, remake if too small
-                # required_size = (rows + 1) * (2 * text_height_sieve)
-                # available_rows = (sieve_graph_y // text_height_sieve) + 1
-                # print(f'[LOG] {rows} required rows', end=', ')
-                # print(f"{required_size = }, {sieve_graph_y = }", end=', ')
-                # print(f"{available_rows = }")
-                # if rows <= (sieve_graph_y // (text_height_sieve * 2)) + 1:  # enough rows
-                #     window['found primes'].update(value='None')
-                #     sieve_graph.erase()
-                #     outline_ids = None
-                #     sieve_animation_steps['finished'] = False
-                #     animate_sieve = True
-                #     sieve_animation_steps['find coordinates'] = True
-                # else:  
-                #     if required_size > 32_500:  # max canvas size
-                #         sg.popup('Can not make a large enough canvas.\nTry selecting a smaller font size, or input a lower value.', title='Warning', custom_text=('Cancel'), keep_on_top=True)
-                #         pass
-                #     else:    
-                #         popup_event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
-                #                         custom_text=('Continue', 'Cancel'), keep_on_top=True)
-                #         if popup_event == 'Continue':
-                #             sieve_graph_y = required_size
-                #             window.close()
-                #             window = mk.make_window(current_theme, sieve_default=max_sieve, sieve_graph_y=required_size, sieve_size=text_height_sieve)
 
+    #################################################################################################
     # ----- Novelty Tab -----------------------------------------------------------------------------
+    #################################################################################################
         elif event == 'generate novelties':
             print("[LOG] Clicked Build.")
             if values['novelty input'].isnumeric():
@@ -496,31 +484,32 @@ def main():
                 novelty_px = pt_to_px(novelty_font)
                 longest = largest_power_of_2_less_than(max_novelty)
                 novelty_column_width = ((2 * longest) - 1)
+                columns = novelty_graph_x // (novelty_column_width * novelty_font)
                 # check size
-                if check_size(novelty_graph_y, max_novelty, novelty_column_width, 4.5, novelty_px, get=True):  # enough rows, build
-                    novelty_graph.erase()
-                    novelties, factorizations = gn.generate_up_to(max_novelty)
-                    order = 'novelty' if values['novelty order'] else 'natural'
-                    novelty_objects_NatKey, novelty_objects_NovKey = make_novelty_objects(novelty_graph_x, novelty_column_width, max_novelty, novelty_px, novelties, factorizations)
-                    draw_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, order, pt=novelty_font)
+                novelty_required_size, enough_rows = check_size(graph_height=novelty_graph_y, graph_width=novelty_graph_x, value=max_novelty, char_width=novelty_column_width, lines_per_row=4, px=novelty_px, get=True)
+                if enough_rows:  # enough rows, build
+                    novelty_objects_NatKey, novelty_objects_NovKey = generate_novelties(max_novelty)
                 else:
-                    if required_size > 32_500:  # max canvas size
-                        sg.popup('Can not make a large enough canvas.\nTry selecting a smaller font size, or input a lower value.', title='Warning', custom_text=('Cancel'), keep_on_top=True)
+                    if novelty_required_size > 31_000:  # max canvas size
+                        too_big(columns=columns, pt=novelty_font, lines_per_row=4)
                         pass
                     else:    
-                        popup_event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
+                        popup_event = sg.popup('A larger canvas is needed.\nThis will cause the window to reset.\n\nContinue?\n', title='Warning',
                                         custom_text=('Continue', 'Cancel'), keep_on_top=True)
                         if popup_event == 'Continue':
-                            novelty_graph_y = required_size
+                            novelty_graph_y = novelty_required_size
                             window.close()
-                            window = mk.make_window(current_theme, novelty_default=max_novelty, novelty_graph_y=required_size, novelty_size=novelty_px, sieve_default=int(values['sieve input']), sieve_graph_y=sieve_graph_y, sieve_size=int(values[sieve_font]))
+                            window = mk.make_window(current_theme, novelty_default=max_novelty, novelty_graph_x=novelty_graph_x, novelty_graph_y=novelty_required_size, novelty_size=int(novelty_px), sieve_default=values['sieve input'], sieve_graph_y=sieve_graph_y, sieve_size=int(sieve_font[-2:]))
+                            window['-TAB GROUP-'].Widget.select(1)
+                            novelty_objects_NatKey, novelty_objects_NovKey = generate_novelties(max_novelty)
+            else:
+                sg.popup("    Input value error.    \n    Please enter only integer values for     \n    the largest value and font.    \n", title='Value Error', custom_text=('    Ok    '), any_key_closes=True)
 
-        elif event.endswith('order'):
+        elif str(event).endswith('order'):
             print(f"[LOG] Clicked {event}")
             order: str = event.split()[0]
             novelty_graph.erase()
             if novelty_objects_NatKey is not None and novelty_objects_NovKey is not None:
-                novelty_font = int(values['novelty font'])
                 draw_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, order, pt=novelty_font)
 
         elif event == 'novelty graph':
@@ -528,6 +517,8 @@ def main():
             if novelty_selection_box is not None:
                 for line in novelty_selection_box:
                     novelty_graph.delete_figure(line)
+                window['novelty clicked value'].update(value=f"{'Value:':<{20}}")
+                window['conversion'].update(value=f"{'Conversion:':<{20}}\n")
             click_x = float(values[event][0])
             click_y = float(values[event][1])
             found: bool = False
@@ -561,34 +552,34 @@ def main():
             except ValueError:
                 pass
             
-
+    
+    #################################################################################################
     # ----- Sieve Tab -------------------------------------------------------------------------------
+    #################################################################################################
         elif event == 'go-sieve':
             print(f"[LOG] Clicked {event}")
             try:
                 max_sieve = int(values['sieve input'])
                 text_height_sieve = pt_to_px(int(sieve_font[-2:]))  # calculate text size in pixels
                 sieve_column_width = len(str(max_sieve)) + 1
-                columns = 975 // (sieve_column_width * text_height_sieve)
+                columns = (sieve_graph_x - (text_height_sieve * 2)) // (sieve_column_width * text_height_sieve)
                 rows = (max_sieve // columns) + 1
-                primes_so_far = []
-                reset_globals(speed=values['sieve speed'])
+                print(f'[LOG] {rows*columns = }')
                 # check graph size, remake if too small
                 required_size = (rows + 1) * (2 * text_height_sieve)
-                available_rows = (sieve_graph_y // text_height_sieve) + 1
+                available_rows = (sieve_graph_y // (text_height_sieve * 2)) + 1
                 print(f'[LOG] {rows} required rows', end=', ')
                 print(f"{required_size = }, {sieve_graph_y = }", end=', ')
                 print(f"{available_rows = }")
                 if rows <= (sieve_graph_y // (text_height_sieve * 2)) + 1:  # enough rows
+                    reset_globals(set_interval=1000, speed=values['sieve speed'])
                     window['found primes'].update(value='None')
                     sieve_graph.erase()
-                    outline_ids = None
-                    sieve_animation_steps['finished'] = False
                     animate_sieve = True
                     sieve_animation_steps['find coordinates'] = True
                 else:  
-                    if required_size > 32_500:  # max canvas size
-                        sg.popup('Can not make a large enough canvas.\nTry selecting a smaller font size, or input a lower value.', title='Warning', custom_text=('Cancel'), keep_on_top=True)
+                    if required_size > 31_000:  # max canvas size
+                        too_big(columns=columns, pt=text_height_sieve, lines_per_row=2)
                         pass
                     else:    
                         popup_event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
@@ -654,7 +645,9 @@ def main():
                             window['sieve clicked primes'].update(value=update_text)
                         found = True
 
-    # ----- Animations -------------------------------------------------------------------------------
+    #################################################################################################
+    # ----- Animations ------------------------------------------------------------------------------
+    #################################################################################################
         if animate_sieve:
             print('[LOG] Animation Pass')
             outline_ids = sieve_animation(window, values, max_sieve, text_height_sieve, outline_ids)

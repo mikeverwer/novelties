@@ -96,7 +96,7 @@ class NoveltyObject:
         return self.novelty < other.novelty
     
     def __repr__(self):
-        return f"NoveltyObject (natural={self.natural}, novelty={self.novelty})"
+        return f"NoveltyObject (natural={self.natural}, novelty={self.novelty}, {self.row = }, {self.column = })"
         # return f"NoveltyObject (natural={self.natural}, novelty={self.novelty}, coord={self.coord}, factorization={self.factorization}, length={self.length}, hitbox={self.hitbox})"
     
 
