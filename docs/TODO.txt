@@ -2,9 +2,7 @@
 - Novelty & Sieve title 'buttons' link to relavent article  (either via popup or web link)
 
 - implement settings:
-    set graph dimensions
-    set theme
-        theme preview popup
+    SETTINGS DICTIONARY
     'save settings' - rebuild window
 
 - reformat sieve tab

@@ -422,6 +422,8 @@ def convert_factors_to_string(prime_dict):
 #################################################################################################
 def main():
     current_theme = 'DarkGray4'
+    default_theme = current_theme
+    new_theme = None
     main_window = mk.make_window(theme=current_theme, sieve_default=200, novelty_default=200, sieve_graph_x=1_000, sieve_graph_y=3_000, novelty_graph_x=1_200, novelty_graph_y=3_000)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
@@ -590,6 +592,8 @@ def main():
                             sieve_graph_y = required_size
                             window.close()
                             window = mk.make_window(current_theme, novelty_default=int(values['novelty input']), novelty_graph_y=novelty_graph_y, novelty_size=values['novelty font'], sieve_default=max_sieve, sieve_graph_y=required_size, sieve_size=text_height_sieve)
+                            window['-TAB GROUP-'].Widget.select(0)
+                            # Begin Animation def goes here.
             except ValueError:
                 pass
 
@@ -646,6 +650,41 @@ def main():
                             update_text = f"{'Prime Factors:':<{15}}" + str(value_object.factors) if value_object.factors is not None else f"{'Prime Factors:':<{20}}"
                             window['sieve clicked primes'].update(value=update_text)
                         found = True
+
+    #################################################################################################
+    # ----- Settings Tab ----------------------------------------------------------------------------
+    #################################################################################################
+        elif str(event).startswith('dimension'):
+            parameter = event[-2:]
+            if parameter.startswith('s'):
+                if parameter.endswith('x'):
+                    sieve_graph_x = values[event]
+                else:
+                    sieve_graph_y = values[event]
+            elif parameter.startswith('n'):
+                if parameter.endswith('x'):
+                    novelty_graph_x = values[event]
+                else:
+                    novelty_graph_y = values[event]
+
+        elif event == 'theme list':
+            new_theme = values[event][0]
+            sg.change_look_and_feel(values['theme list'][0])
+            sg.popup_get_text('This is {}'.format(values['theme list'][0]))
+
+        elif event == 'save settings':
+            popup_event = sg.popup_ok_cancel("This will cause the window to be remade.\n\nContinue?\n")
+            if popup_event.lower() == 'ok':
+                if new_theme is None:
+                    new_theme = current_theme
+                # get window values
+                sieve_in, novelty_in, sieve_pt, novelty_pt = int(values['sieve input']), int(values['novelty input']), int(values['sieve font']), int(values['novelty font'])
+                window.close()
+                window = mk.make_window(new_theme, sieve_in, novelty_in, sieve_graph_x, sieve_graph_y, novelty_graph_x, novelty_graph_y, sieve_pt, novelty_pt)
+                window['-TAB GROUP-'].Widget.select(2)
+                current_theme = new_theme
+
+
 
     #################################################################################################
     # ----- Animations ------------------------------------------------------------------------------
