@@ -27,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2"
-     inkscape:cx="-353.5"
-     inkscape:cy="140.25"
+     inkscape:zoom="1.4142136"
+     inkscape:cx="-229.45615"
+     inkscape:cy="77.428193"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -41,8 +41,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-x="1912"
+     inkscape:window-y="46"
      inkscape:window-maximized="1"
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
@@ -127,19 +127,20 @@
          y="-37.213047" />
       <text
          xml:space="preserve"
-         style="font-size:4.23333px;line-height:1.25;font-family:Helvetica;-inkscape-font-specification:Helvetica;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#1b1b1b;fill-opacity:1;stroke-width:0.265;stroke-dasharray:none"
+         style="font-size:4.23333px;line-height:1.25;font-family:Helvetica;-inkscape-font-specification:Helvetica;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#1b1b1b;fill-opacity:1;stroke:#1b1b1b;stroke-width:0.265;stroke-dasharray:none;stroke-opacity:1"
          x="-145.61957"
-         y="-32.034927"
+         y="-31.770344"
          id="text2-1"><tspan
            sodipodi:role="line"
            id="tspan2-5"
-           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#1b1b1b;fill-opacity:1;stroke-width:0.265;stroke-dasharray:none"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#1b1b1b;fill-opacity:1;stroke:#1b1b1b;stroke-width:0.265;stroke-dasharray:none;stroke-opacity:1"
            x="-145.61957"
-           y="-32.034927">Save Settings</tspan><tspan
+           y="-31.770344"
+           dx="0 0.1403165 0.046772167 0.1403165 0 0.18708867 0.1403165 0.1403165 0.23386084 0.23386084 0.093544334 0.1403165 0.1403165">Save Settings</tspan><tspan
            sodipodi:role="line"
-           style="fill:#1b1b1b;fill-opacity:1;stroke-width:0.265;stroke-dasharray:none"
+           style="fill:#1b1b1b;fill-opacity:1;stroke:#1b1b1b;stroke-width:0.265;stroke-dasharray:none;stroke-opacity:1"
            x="-145.61957"
-           y="-26.743265"
+           y="-26.478682"
            id="tspan3-8" /></text>
     </g>
     <g
@@ -156,7 +157,7 @@
          transform="translate(0.52916134,28.409923)"
          style="stroke:none;stroke-width:0.52916667;stroke-dasharray:none;fill:#1b1b1b;fill-opacity:1">
         <rect
-           style="opacity:0.998;fill:#1b1b1b;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.52916667;stroke-linecap:square;stroke-opacity:1;paint-order:markers fill stroke;stroke-dasharray:none"
+           style="opacity:0.998;fill:#1b1b1b;fill-opacity:1;stroke:none;stroke-width:0.52916667;stroke-linecap:square;stroke-opacity:1;paint-order:markers fill stroke;stroke-dasharray:none"
            id="rect1-0"
            width="35.98333"
            height="8.1692944"
@@ -178,6 +179,82 @@
              x="-145.61957"
              y="-26.743265"
              id="tspan3-8-4" /></text>
+      </g>
+    </g>
+    <g
+       id="g3-8"
+       inkscape:export-filename="light_mode.png"
+       inkscape:export-xdpi="96.0011"
+       inkscape:export-ydpi="96.0011"
+       transform="translate(-10.980213,-18.818202)">
+      <rect
+         style="opacity:0.998;fill:#dcdcdc;fill-opacity:1;stroke:#1b1b1b;stroke-width:0.52916667;stroke-linecap:square;stroke-opacity:1;paint-order:markers fill stroke;stroke-dasharray:none"
+         id="rect1-9"
+         width="35.98333"
+         height="8.1692944"
+         x="-163.58437"
+         y="-37.213047" />
+      <text
+         xml:space="preserve"
+         style="font-size:4.23333px;line-height:1.25;font-family:Helvetica;-inkscape-font-specification:Helvetica;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#1b1b1b;fill-opacity:1;stroke:#1b1b1b;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1"
+         x="-145.66919"
+         y="-31.811684"
+         id="text2-1-0"><tspan
+           sodipodi:role="line"
+           id="tspan2-5-0"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#1b1b1b;fill-opacity:1;stroke:#1b1b1b;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1"
+           x="-145.66919"
+           y="-31.811684"
+           dx="0 0.280633 0.18708867 0.093544334 0.1403165 0.093544334 0.046772167 0.093544334 0.18708867 0.1403165">Light Mode</tspan><tspan
+           sodipodi:role="line"
+           style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#1b1b1b;fill-opacity:1;stroke:#1b1b1b;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1"
+           x="-145.66919"
+           y="-26.520021"
+           id="tspan1" /><tspan
+           sodipodi:role="line"
+           style="fill:#1b1b1b;fill-opacity:1;stroke:#1b1b1b;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1"
+           x="-145.66919"
+           y="-21.228359"
+           id="tspan3-8-43" /></text>
+    </g>
+    <g
+       id="g4-6"
+       style="fill:#1b1b1b;fill-opacity:1;stroke:none;stroke-width:0.52916698;stroke-dasharray:none"
+       inkscape:export-filename="dark_mode.png"
+       inkscape:export-xdpi="96.0011"
+       inkscape:export-ydpi="96.0011"
+       transform="translate(30.956252,-47.228126)">
+      <g
+         id="g3-6-5"
+         inkscape:export-filename="save_settings.png"
+         inkscape:export-xdpi="96.0011"
+         inkscape:export-ydpi="96.0011"
+         transform="translate(0.52916134,28.409923)"
+         style="fill:#1b1b1b;fill-opacity:1;stroke:none;stroke-width:0.52916698;stroke-dasharray:none">
+        <rect
+           style="opacity:0.998;fill:#1b1b1b;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.52916698;stroke-linecap:square;stroke-dasharray:none;stroke-opacity:1;paint-order:markers fill stroke"
+           id="rect1-0-5"
+           width="35.98333"
+           height="8.1692944"
+           x="-163.58437"
+           y="-37.213047" />
+        <text
+           xml:space="preserve"
+           style="font-size:4.23333px;line-height:1.25;font-family:Helvetica;-inkscape-font-specification:Helvetica;text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#dcdcdc;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1"
+           x="-145.67952"
+           y="-31.639086"
+           id="text2-1-4-5"><tspan
+             sodipodi:role="line"
+             id="tspan2-5-5-8"
+             style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;font-family:Helvetica;-inkscape-font-specification:'Helvetica, Bold';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#dcdcdc;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1"
+             x="-145.67952"
+             y="-31.639086"
+             dx="0 0.22583599 0.24520966 0.26458332 0.13229166 0 0.13229166 0.1984375 0.1984375">Dark Mode</tspan><tspan
+             sodipodi:role="line"
+             style="fill:#dcdcdc;fill-opacity:1;stroke:#dcdcdc;stroke-width:0.264583;stroke-dasharray:none;stroke-opacity:1"
+             x="-145.67952"
+             y="-26.347424"
+             id="tspan3-8-4-6" /></text>
       </g>
     </g>
   </g>

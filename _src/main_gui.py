@@ -5,6 +5,7 @@ import make_window as mk
 import graph_object_classes as go
 import colours
 import brightness
+import BASE64
 # import sieve_animation
 import PySimpleGUI as sg
 import time
@@ -14,6 +15,7 @@ update_interval = 1
 colours_list = colours.list_colour_names()
 colours_dict = colours.dict_colours()
 primes = soe.primes_up_to_100()
+
 
 black = '#1b1b1b'  # light-mode/dark-mode text/backgrounds
 white = '#dcdcdc'  #
@@ -88,7 +90,7 @@ def conversion_chart_window(chart_string, longest):
     return window
 
 
-def make_novelty_objects(graph_width: int | float, longest: int, largest: int, em: int, novelties: dict[str], factors: dict[dict[int: int]]):
+def make_novelty_objects(graph_width: int | float, longest: int, largest: int, em: int, novelties: dict[str], factors: dict[dict[int: int]], mode='dark'):
         print(f'[LOG] Building co-ordinates.')
         # Initialzes objects to a graph
         column_chars = longest  # was + 2
@@ -125,23 +127,24 @@ def make_novelty_objects(graph_width: int | float, longest: int, largest: int, e
         return NatOrd, NovOrd
 
 
-def draw_novelties(window, values, nat_list: list[go.NoveltyObject] = None, nov_list: list[go.NoveltyObject] = None, ordering='novelty', pt=16):
+def draw_novelties(window, values, nat_list: list[go.NoveltyObject] = None, nov_list: list[go.NoveltyObject] = None, ordering='novelty', pt=16, mode='dark'):
     global primes
+    text_colour = white if mode =='dark' else black
     graph = window['novelty graph']
     graph.erase()
     # draw novelties
     print(f'[LOG] Drawing novelties.')
     if ordering == 'natural':
         for value in nat_list:
-            graph.draw_text(text=f"{str(value.natural) : ^{value.length}}\n{str(value.novelty) : ^{value.length}}", location=value.coord, font=f'Courier {pt} bold', color='#dcdcdc')
-            draw_box(value, graph)
+            graph.draw_text(text=f"{str(value.natural) : ^{value.length}}\n{str(value.novelty) : ^{value.length}}", location=value.coord, font=f'Courier {pt} bold', color=text_colour)
+            draw_box(value, graph, box_colour=text_colour)
     elif ordering == 'novelty':
         i = 0
         for value in nov_list:
             to_print = f"{str(value.natural) : ^{value.length}}\n{str(value.novelty) : ^{value.length}}"
             coordinate = value.coord
-            graph.draw_text(text=to_print, location=coordinate, font=f'Courier {pt} bold')
-            draw_box(value, graph)
+            graph.draw_text(text=to_print, location=coordinate, font=f'Courier {pt} bold', color=text_colour)
+            draw_box(value, graph, box_colour=text_colour)
             i += 1
 
 
@@ -160,7 +163,8 @@ def draw_box(thing, graph, box_colour='#dcdcdc', line_width=2, xoffset=0, yoffse
     return l1, l2, l3, l4
 
 
-def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
+def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None, mode = 'dark'):
+    text_colour = white if mode == 'dark' else black
     graph = window['sieve graph']
     global update_interval
     global animation_speed_sieve
@@ -189,7 +193,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
 
     def choose_colour(seed):
         # colour_name = random.choice(colours_list)  # colour is random each run
-        colour_name = colours_list[(int(seed) * 97) % len(colours_list)]  # colour tied to prime, first try
+        colour_name = colours_list[((int(seed) * 97)) % len(colours_list)]  # colour tied to prime, first try
         colour_hex = colours_dict[colour_name]
         attempts = 1  # ensure the colour is "appropriate"
         print(f"[LOG] Choosing Colour: {attempts = }, {colour_name}, {colour_hex}")
@@ -212,7 +216,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
                     graph.delete_figure(outline_id)
                     outline_ids.remove(outline_id)
         # choose colour
-        sieve_animation_steps['prime colour'] = choose_colour(thing.value)
+        sieve_animation_steps['prime colour'] = choose_colour(thing.value) if thing.value > 2 else ('white' if mode == 'dark' else 'black')
         box_colour = sieve_animation_steps['prime colour']
         thing.colours.append(box_colour)
 
@@ -277,7 +281,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None):
         print('[LOG] Drawing numbers.')
         update_interval = 1 * animation_speed_sieve
         for number in sieve_value_objects:
-            graph.draw_text(str(number.value), number.coord, font=sieve_font + ' bold', color='#dcdcdc')
+            graph.draw_text(str(number.value), number.coord, font=sieve_font + ' bold', color=text_colour)
             # show hitboxes
             # graph.draw_rectangle(bottom_right=(number.hitbox[1][0], number.hitbox[0][1]), top_left=(number.hitbox[
             # 0][0], number.hitbox[1][1]), line_width=1)
@@ -450,6 +454,7 @@ def main():
     novelty_objects_NatKey, novelty_objects_NovKey = None, None
     max_value = None
     mode = 'dark'
+    logging = False
 
     def too_big(columns, pt, lines_per_row):
         largest_possible = (31_000 // (pt * lines_per_row)) * columns
@@ -460,7 +465,7 @@ def main():
         novelties, factorizations = gn.generate_up_to(value)
         order = 'novelty' if values['novelty order'] else 'natural'
         NatKey, NovKey = make_novelty_objects(novelty_graph_x, novelty_char_width, value, novelty_px, novelties, factorizations)
-        draw_novelties(window, values, NatKey, NovKey, order, pt=novelty_font)
+        draw_novelties(window, values, NatKey, NovKey, order, pt=novelty_font, mode=mode)
         return NatKey, NovKey
 
     def begin_animation(window, values):
@@ -472,19 +477,25 @@ def main():
         animate_sieve = True
         sieve_animation_steps['find coordinates'] = True
     
-    def set_window(window, values):
-        events = ['sieve input', 'sieve font', 'novelty input', 'novelty font', 'dimension sx', 'dimension sy', 'dimension nx', 'dimension ny']
-        for event in events:
+    def set_window(window, values, mode='dark'):
+        button_image = BASE64.dark_mode if mode == 'dark' else BASE64.light_mode
+        inputs = ['sieve input', 'sieve font', 'novelty input', 'novelty font']
+        dimensions = ['dimension sx', 'dimension sy', 'dimension nx', 'dimension ny']
+        for event in inputs:
             window[event].update(values[event])
+        for event in dimensions:
+            window[event].update(values[event])  # fix when refactor dimension variables into a dict of dicts/lists
+        window['mode'].update(image_data=button_image)
+        
     
-    def collect_window_args(values):
+    def collect_window_args(values, mode):
         # window args: theme='Default1', sieve_default=200, novelty_default=200, sieve_graph_x=1000, sieve_graph_y=10000, novelty_graph_x=1200, novelty_graph_y=10000, sieve_size=14, novelty_size=14, setting_defaults: list = None
         global sieve_graph_x
         global sieve_graph_y
         global novelty_graph_x
         global novelty_graph_y
         # theme='Default1', sieve_default=200, novelty_default=200, sieve_graph_x=1000, sieve_graph_y=10000, novelty_graph_x=1200, novelty_graph_y=10000, sieve_size=14, novelty_size=14, setting_defaults: list = None
-        return [current_theme, values['sieve input'], values['novelty input'], sieve_graph_x, sieve_graph_y, novelty_graph_x, novelty_graph_y, values['sieve font'], values['novelty font']]
+        return [current_theme, values['sieve input'], values['novelty input'], sieve_graph_x, sieve_graph_y, novelty_graph_x, novelty_graph_y, values['sieve font'], values['novelty font'], mode]
 
     # This is an Event Loop #################################################################################################
     while True:
@@ -493,7 +504,7 @@ def main():
         novelty_graph = window['novelty graph']
 
         # log events and handle closing
-        if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
+        if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED) and (logging == True or event == 'show values'):
             print('============ Event = ', event, ' ==============')
             print('-------- Values Dictionary (key=value) --------')
             for key in values:
@@ -530,11 +541,11 @@ def main():
                         if popup_event == 'Continue':
                             novelty_graph_y = required_size
                             required_size = None  # cleanup
-                            window_args = collect_window_args(values)
+                            window_args = collect_window_args(values, mode=mode)
                             window.close()
-                            window = mk.make_window(*window_args)
+                            window = mk.make_window(*window_args, mode=mode)
                             window['-TAB GROUP-'].Widget.select(1)
-                            set_window(window, values)
+                            set_window(window, values, mode)
                             novelty_objects_NatKey, novelty_objects_NovKey = generate_novelties(max_novelty)
             else:
                 sg.popup("    Input value error.    \n    Please enter only integer values for     \n    the largest value and font.    \n", title='Value Error', custom_text=('    Ok    '), any_key_closes=True)
@@ -544,31 +555,32 @@ def main():
             order: str = event.split()[0]
             novelty_graph.erase()
             if novelty_objects_NatKey is not None and novelty_objects_NovKey is not None:
-                draw_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, order, pt=novelty_font)
+                draw_novelties(window, values, novelty_objects_NatKey, novelty_objects_NovKey, order, pt=novelty_font, mode=mode)
 
         elif event == 'novelty graph':
             print(f"[LOG] Clicked {event}")
-            if novelty_selection_box is not None:
-                for line in novelty_selection_box:
-                    novelty_graph.delete_figure(line)
-                window['novelty clicked value'].update(value=f"{'Value:':<{20}}")
-                window['conversion'].update(value=f"{'Conversion:':<{20}}\n")
-            click_x = float(values[event][0])
-            click_y = float(values[event][1])
-            found: bool = False
-            order = novelty_objects_NovKey if values['novelty order'] else novelty_objects_NatKey
-            longest = len(str(values['novelty input']))
-            for value_object in order:
-                if not found:
-                    if value_object.is_hit((click_x, click_y), xoffset=0, yoffset=0):
-                        novelty_selection_box = draw_box(value_object, novelty_graph, box_colour='magenta', line_width=3, xoffset = -6, yoffset=-4)
-                        update_text = f"{'Value:':<{20}}" + f'{value_object.natural:<{longest}}'
-                        window['novelty clicked value'].update(value=update_text)
-                        conversion = convert_factors_to_string(value_object.factors)
-                        update_text = f"{'Conversion:':<{20}}\n" + f"{f'{conversion}':>{longest + 25}}"
-                        window['conversion'].update(value=update_text)
-                        print(f"[LOG] {value_object}")
-                        found = True
+            if novelty_objects_NatKey is not None and novelty_objects_NovKey is not None:
+                if novelty_selection_box is not None:
+                    for line in novelty_selection_box:
+                        novelty_graph.delete_figure(line)
+                    window['novelty clicked value'].update(value=f"{'Value:':<{20}}")
+                    window['conversion'].update(value=f"{'Conversion:':<{20}}\n")
+                click_x = float(values[event][0])
+                click_y = float(values[event][1])
+                found: bool = False
+                order = novelty_objects_NovKey if values['novelty order'] else novelty_objects_NatKey
+                longest = len(str(values['novelty input']))
+                for value_object in order:
+                    if not found:
+                        if value_object.is_hit((click_x, click_y), xoffset=0, yoffset=0):
+                            novelty_selection_box = draw_box(value_object, novelty_graph, box_colour='magenta', line_width=3, xoffset = -6, yoffset=-4)
+                            update_text = f"{'Value:':<{20}}" + f'{value_object.natural:<{longest}}'
+                            window['novelty clicked value'].update(value=update_text)
+                            conversion = convert_factors_to_string(value_object.factors)
+                            update_text = f"{'Conversion:':<{20}}\n" + f"{f'{conversion}':>{longest + 25}}"
+                            window['conversion'].update(value=update_text)
+                            print(f"[LOG] {value_object}")
+                            found = True
 
 
         elif event == '-SHOW CHART-':
@@ -617,12 +629,12 @@ def main():
                         if popup_event == 'Continue':
                             sieve_graph_y = required_size
                             required_size = None  # cleanup
-                            window_args = collect_window_args(values)
+                            window_args = collect_window_args(values, mode)
                             window.close()
-                            window = mk.make_window(*window_args)
+                            window = mk.make_window(*window_args, mode=mode)
                             window['-TAB GROUP-'].Widget.select(0)
-                            set_window(window, values)
-                            # Begin Animation def goes here.
+                            set_window(window, values, mode)
+                            begin_animation(window, values)
             except ValueError:
                 pass
 
@@ -644,7 +656,7 @@ def main():
             print("[LOG] Clicked Pause/Play")
             animate_sieve = not animate_sieve
             old_interval = update_interval
-            if animate_sieve:
+            if animate_sieve and old_interval is not None:
                 update_interval = old_interval
             else:  # prevent high refresh rate when idle.
                 update_interval = 1
@@ -696,42 +708,53 @@ def main():
                 else:
                     novelty_graph_y = values[event]
 
-        elif str(event).endswith('mode'):
-            mode = event.split[0]
-            print(mode)
+        elif event == 'mode':
+            print(f"[LOG] Clicked {event}", end=': ')
+            mode = 'dark' if mode == 'light' else 'light'
+            print(f"{mode = }")
+            mode_image = BASE64.dark_mode if mode == 'dark' else BASE64.light_mode
+            window['mode'].update(image_data=mode_image)
 
         elif event == 'theme list':
+            print(f"[LOG] Clicked {event}")
             new_theme = values[event][0]
             sg.change_look_and_feel(values['theme list'][0])
             sg.popup_get_text('This is {}'.format(values['theme list'][0]))
 
         elif event == 'save settings':
+            print(f"[LOG] Clicked {event}")
             popup_event = sg.popup_ok_cancel("This will cause the window to be remade.\n\nContinue?\n")
             print(f'[LOG] {popup_event = }')
             if popup_event == 'OK':
                 if new_theme is None:
                     new_theme = current_theme
                 # get window values
-                window_args = collect_window_args(values)
+                window_args = collect_window_args(values, mode)
                 window_args[0] = new_theme
                 window.close()
-                window = mk.make_window(*window_args)
+                window = mk.make_window(*window_args, mode=mode)
                 window['-TAB GROUP-'].Widget.select(2)
                 current_theme, values['theme list'] = new_theme, new_theme
-                set_window(window, values)
+                set_window(window, values, mode)
             else:
                 pass
 
-
+    #################################################################################################
+    # ----- Logging Tab -----------------------------------------------------------------------------
+    #################################################################################################
+        elif event == 'clear log':
+            print(f"[LOG] Clicked {event}")
+            window['log'].update(value='')
 
     #################################################################################################
     # ----- Animations ------------------------------------------------------------------------------
     #################################################################################################
         if animate_sieve:
             print('[LOG] Animation Pass')
-            outline_ids = sieve_animation(window, values, max_sieve, px_sieve, outline_ids)
+            outline_ids = sieve_animation(window, values, max_sieve, px_sieve, outline_ids, mode)
             # sieve_animation.sieve_animation(window, values, )
             if sieve_animation_steps['finished']:
+                update_interval = 1
                 animate_sieve = False
 
     for window in windows:
