@@ -1,0 +1,16 @@
+- change program icon to eratosthenes.png
+- Novelty & Sieve title 'buttons' link to relavent article  (either via popup or web link)
+
+- implement settings:
+    SETTINGS DICTIONARY
+    'save settings' - rebuild window
+
+- reformat sieve tab
+    emulate novelty tab: all controls on the left side, prime list also
+
+- update readme
+    installation instructions
+    sieve of eratosthenese writeup 
+
+- set up for proper release
+    venv (fml)

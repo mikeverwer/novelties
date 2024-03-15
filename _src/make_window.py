@@ -94,7 +94,6 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
          sg.Column(layout=speed_slider_layout), sg.T('', s=(1, 1)),
          sg.Column(layout=sieve_size_selection_layout), sg.T('', s=(1, 1)),
         ],
-        
     ]
 
     sieve_layout += [[sg.Column(
@@ -118,10 +117,10 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
     
     graph_dimension_sliders_layout = [
         [sg.Text(text='Graph Dimensions:', background_color=bgColour, font='Helvetica 12 bold'), sg.T('Default', k='default graphs', font='Helvetica 10 bold', text_color='#1b1b1b', background_color=bgColour, enable_events=True)],
-        [sg.Text('', background_color=bgColour), sg.T(names[0], background_color=bgColour), sg.Slider(k=f'dimension slider sx', range=ranges[0], default_value=defaults[0], resolution=resolutions[0], tick_interval=tick_intervals[0], orientation='h', background_color=bgColour, enable_events=True), sg.Text('', background_color=bgColour)],
-        [sg.Text('', background_color=bgColour), sg.T(names[1], background_color=bgColour), sg.Slider(k=f'dimension slider sy', range=ranges[1], default_value=defaults[1], resolution=resolutions[1], tick_interval=tick_intervals[1], orientation='h', background_color=bgColour, enable_events=True), sg.Text('', background_color=bgColour)],
-        [sg.Text('', background_color=bgColour), sg.T(names[2], background_color=bgColour), sg.Slider(k=f'dimension slider nx', range=ranges[2], default_value=defaults[2], resolution=resolutions[2], tick_interval=tick_intervals[2], orientation='h', background_color=bgColour, enable_events=True), sg.Text('', background_color=bgColour)],
-        [sg.Text('', background_color=bgColour), sg.T(names[3], background_color=bgColour), sg.Slider(k=f'dimension slider ny', range=ranges[3], default_value=defaults[3], resolution=resolutions[3], tick_interval=tick_intervals[3], orientation='h', background_color=bgColour, enable_events=True), sg.Text('', background_color=bgColour)],
+        [sg.Text('', background_color=bgColour), sg.T(names[0], background_color=bgColour), sg.Slider(k=f'dimension sx', range=ranges[0], default_value=defaults[0], resolution=resolutions[0], tick_interval=tick_intervals[0], orientation='h', background_color=bgColour, enable_events=True), sg.Text('', background_color=bgColour)],
+        [sg.Text('', background_color=bgColour), sg.T(names[1], background_color=bgColour), sg.Slider(k=f'dimension sy', range=ranges[1], default_value=defaults[1], resolution=resolutions[1], tick_interval=tick_intervals[1], orientation='h', background_color=bgColour, enable_events=True), sg.Text('', background_color=bgColour)],
+        [sg.Text('', background_color=bgColour), sg.T(names[2], background_color=bgColour), sg.Slider(k=f'dimension nx', range=ranges[2], default_value=defaults[2], resolution=resolutions[2], tick_interval=tick_intervals[2], orientation='h', background_color=bgColour, enable_events=True), sg.Text('', background_color=bgColour)],
+        [sg.Text('', background_color=bgColour), sg.T(names[3], background_color=bgColour), sg.Slider(k=f'dimension ny', range=ranges[3], default_value=defaults[3], resolution=resolutions[3], tick_interval=tick_intervals[3], orientation='h', background_color=bgColour, enable_events=True), sg.Text('', background_color=bgColour)],
         [sg.Text('', background_color=bgColour)]
         ]
     
@@ -134,7 +133,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
 
     settings_layout = [
         [sg.Text(' Settings ', font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, p=15),
-         sg.Text('\n  Save Settings', background_color='#1b1b1b', text_color='#dcdcdc', s=(15, 2), enable_events=True), sg.Image(data=BASE64.save_settings_image, enable_events=True, k='save settings')],
+         sg.Button(image_data=BASE64.save_settings_image, k='save settings', enable_events=True)],
         [sg.Column(layout=graph_dimension_sliders_layout, background_color='gray', pad=15),
          sg.Column(layout=theme_selection_layout, background_color=bgColour)
         ]
