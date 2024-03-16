@@ -33,12 +33,14 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
                 ['&Help', ['&About']]]
     right_click_menu_def = [[], ['Edit Me', 'Versions', 'Nothing', 'More Nothing', 'Exit']]
 
-    def titlecard(title, key=None, k=None):
+    def titlecard(title, key=None, k=None, pad=((0, 0), (10, 0)), p=None):
         if k is not None:
             key = k
+        if p is not None:
+            pad = p
         bg = black if mode == 'light' else white
         text = white if mode == 'light' else black
-        return sg.Text(title, key=key, font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, background_color=bg, text_color=text, enable_events=True, p=((0, 0), (10, 0)))
+        return sg.Text(title, key=key, font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, background_color=bg, text_color=text, enable_events=True, p=pad)
     
     
 
@@ -58,7 +60,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
         ], title='', background_color='#e5e4e2', relief='solid', vertical_alignment='bottom')
 
     novelty_left_column = sg.Column(layout=[
-            [titlecard(' The Novelties ')],
+            [sg.Push(), titlecard(' The Novelties '), sg.Push()],
             [sg.Push(), sg.Column(layout=[
                 [sg.Text("Enter the largest natural\nnumber to reach: ")],
                 [sg.Input(key='novelty input', size=(10, 1), default_text=str(novelty_default)), sg.Button('Build', key='generate novelties')],
@@ -175,14 +177,13 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
         [sg.Text('Theme Browser', font='Helvetica 12 bold', background_color=bgColour),
          sg.T('Default', k='default graphs', font='Helvetica 10 bold', text_color=black, background_color=bgColour, enable_events=True)],
         [sg.Text('Click to see a demo window.', background_color=bgColour)],
-        [sg.Listbox(values=sg.theme_list(), size=(24, 12), key='theme list', text_color=black, highlight_background_color=black, highlight_text_color=white, sbar_background_color=bgColour, sbar_trough_color=white, sbar_frame_color=black, enable_events=True, background_color=bgColour)],
+        [sg.Listbox(values=sg.theme_list(), size=(24, 14), key='theme list', text_color=black, highlight_background_color=black, highlight_text_color=white, sbar_background_color=bgColour, sbar_trough_color=white, sbar_frame_color=black, enable_events=True, background_color=bgColour)],
         [sg.Text('Current theme:', background_color=bgColour), sg.Text(theme, background_color=bgColour, text_color=black)],
-        [sg.Push(background_color=bgColour), sg.Button(image_data=BASE64.dark_mode, k='mode', enable_events=True), sg.Push(background_color=bgColour)],
     ]
 
     settings_layout = [
-        [titlecard('Settings'),
-         sg.Button(image_data=BASE64.save_settings, k='save settings', enable_events=True)],
+        [titlecard('Settings', p=((15, 15), (10, 0))),
+         sg.Button(image_data=BASE64.save_settings, k='save settings', enable_events=True, p=((10, 10), (10, 0))), sg.Button(image_data=BASE64.dark_mode, k='mode', enable_events=True,  p=((10, 10), (10, 0)))],
         [sg.Column(layout=graph_dimension_settings_layout, background_color=bgColour, pad=15),
          sg.Column(layout=theme_selection_layout, background_color=bgColour)
         ]
