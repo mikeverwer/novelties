@@ -15,16 +15,17 @@ update_interval = 1
 colours_list = colours.list_colour_names()
 colours_dict = colours.dict_colours()
 primes = soe.primes_up_to_100()
+screen_width, screen_height = sg.Window.get_screen_size()
 
 
 black = '#1b1b1b'  # light-mode/dark-mode text/backgrounds
 white = '#dcdcdc'  #
 
 graph_dimensions = {
-            'sx' : 500,
-            'sy' : 600,
-            'nx' : 600,
-            'ny' : 1200
+            'sx' : int,
+            'sy' : int,
+            'nx' : int,
+            'ny' : int
         }
 sieve_font = 'Courier 14'
 novelty_font = 'Courier 14'
@@ -391,8 +392,9 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None, m
     return outline_ids
 
 
-def check_size(graph_height:int, graph_width: int, value: int, char_width: int, lines_per_row: int | float, px: int, get: bool):
+def check_size(graph: sg.Graph, value: int, char_width: int, lines_per_row: int | float, px: int, get: bool):
                 # checks if the graph will be large enough to display enough items in a given coloumn width
+                graph_width, graph_height = graph.get_size()
                 px_width = char_width * px
                 px_height = lines_per_row * px
                 columns = graph_width // px_width
@@ -434,10 +436,11 @@ def main():
     current_theme = 'DarkGray4'
     default_theme = current_theme
     new_theme = None
-    main_window = mk.make_window(theme=current_theme)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
+    main_window = mk.make_window(theme=default_theme)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
     novelty_graph = main_window['novelty graph']
+    window = main_window
     global graph_dimensions
     global animate_sieve
     global animation_speed_sieve
@@ -449,7 +452,6 @@ def main():
     outline_ids = None
     sieve_selection_box = None
     novelty_selection_box = None
-    window = main_window
     chart_open: bool = False
     novelty_objects_NatKey, novelty_objects_NovKey = None, None
     max_novelty = None
@@ -477,14 +479,17 @@ def main():
         animate_sieve = True
         sieve_animation_steps['find coordinates'] = True
     
-    def set_window(window, values, mode='dark'):
+    def set_window(window, values, graph_dimensions:dict, mode='dark'):
         button_image = BASE64.dark_mode if mode == 'dark' else BASE64.light_mode
-        inputs = ['sieve input', 'sieve font', 'novelty input', 'novelty font']
-        dimensions = ['dimension sx', 'dimension sy', 'dimension nx', 'dimension ny']
+        inputs = ['sieve input', 'sieve font', 'novelty input', 'novelty font', 'sieve speed']
+        dimensions = ['sx', 'sy', 'nx', 'ny']
         for event in inputs:
             window[event].update(values[event])
         for event in dimensions:
-            window[event].update(values[event])  # fix when refactor dimension variables into a dict of dicts/lists
+            manual = f'manual {event}'
+            slider = f'slider {event}'
+            window[manual].update(value=graph_dimensions[event])  # fix when refactor dimension variables into a dict of dicts/lists
+            window[slider].update(value=graph_dimensions[event])
         window['mode'].update(image_data=button_image)
 
 
@@ -513,6 +518,7 @@ def main():
         elif event == 'generate novelties':
             print("[LOG] Clicked Build.")
             if values['novelty input'].isnumeric():
+                graph_dimensions['nx'], graph_dimensions['ny'] = novelty_graph.get_size()
                 max_novelty = int(values['novelty input'])
                 novelty_font = int(values['novelty font'])
                 novelty_px = pt_to_px(novelty_font)
@@ -520,7 +526,7 @@ def main():
                 novelty_char_width = ((2 * longest) - 1)
                 columns = graph_dimensions['nx'] // (novelty_char_width * novelty_font)
                 # check size
-                required_size, enough_rows = check_size(graph_height=graph_dimensions['ny'], graph_width=graph_dimensions['nx'], value=max_novelty, char_width=novelty_char_width, lines_per_row=4, px=novelty_px, get=True)
+                required_size, enough_rows = check_size(graph=novelty_graph, value=max_novelty, char_width=novelty_char_width, lines_per_row=4, px=novelty_px, get=True)
                 if enough_rows:  # enough rows, build
                     novelty_objects_NatKey, novelty_objects_NovKey = generate_novelties(max_novelty)
                 else:
@@ -536,7 +542,7 @@ def main():
                             window.close()
                             window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
                             window['-TAB GROUP-'].Widget.select(1)
-                            set_window(window, values, mode)
+                            set_window(window, values, graph_dimensions, mode)
                             novelty_objects_NatKey, novelty_objects_NovKey = generate_novelties(max_novelty)
             else:
                 sg.popup("    Input value error.    \n    Please enter only integer values for     \n    the largest value and font.    \n", title='Value Error', custom_text=('    Ok    '), any_key_closes=True)
@@ -596,6 +602,7 @@ def main():
         elif event == 'go-sieve':
             print(f"[LOG] Clicked {event}")
             try:
+                graph_dimensions['sx'], graph_dimensions['sy'] = sieve_graph.get_size()
                 max_sieve = int(values['sieve input'])
                 px_sieve = pt_to_px(int(sieve_font[-2:]))  # calculate text size in pixels
                 sieve_column_width = len(str(max_sieve)) + 1
@@ -623,7 +630,7 @@ def main():
                             window.close()
                             window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
                             window['-TAB GROUP-'].Widget.select(0)
-                            set_window(window, values, mode)
+                            set_window(window, values, graph_dimensions, mode)
                             begin_animation(window, values)
             except ValueError:
                 pass
@@ -686,18 +693,24 @@ def main():
     #################################################################################################
     # ----- Settings Tab ----------------------------------------------------------------------------
     #################################################################################################
-        elif str(event).startswith('dimension'):
+        elif str(event).startswith('slider'):
+            values[event] = int(values[event])
             parameter = event[-2:]
-            if parameter.startswith('s'):
-                if parameter.endswith('x'):
-                    graph_dimensions['sx'] = values[event]
-                else:
-                    graph_dimensions['sy'] = values[event]
-            elif parameter.startswith('n'):
-                if parameter.endswith('x'):
-                    graph_dimensions['nx'] = values[event]
-                else:
-                    graph_dimensions['ny'] = values[event]
+            graph_dimensions[parameter] = values[event]
+            window[f'manual {parameter}'].update(value=values[event])
+        
+        elif str(event).startswith('manual'):
+            try:
+                set_to = int(values[event])
+                parameter = event[-2:]
+                if set_to < 100:
+                    set_to = 100
+                if set_to > screen_width:
+                    set_to = screen_width
+                graph_dimensions[parameter] = values[event]
+                window[f'slider {parameter}'].update(value=values[event])
+            except ValueError:
+                pass
 
         elif event == 'mode':
             print(f"[LOG] Clicked {event}", end=': ')
@@ -705,6 +718,13 @@ def main():
             print(f"{mode = }")
             mode_image = BASE64.dark_mode if mode == 'dark' else BASE64.light_mode
             window['mode'].update(image_data=mode_image)
+        
+        elif event == 'default graphs':
+            defaults = [int(screen_width * 0.5 - 310), 600, int(screen_width * 0.5 - 210), 3000]
+            for i, key in enumerate(graph_dimensions):
+               graph_dimensions[key] = defaults[i]
+               window[f'slider {key}'].update(value=defaults[i])
+               window[f'manual {key}'].update(value=defaults[i])
 
         elif event == 'theme list':
             print(f"[LOG] Clicked {event}")
@@ -724,7 +744,7 @@ def main():
                 window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
                 window['-TAB GROUP-'].Widget.select(2)
                 current_theme, values['theme list'] = new_theme, new_theme
-                set_window(window, values, mode)
+                set_window(window, values, graph_dimensions, mode)
             else:
                 pass
 

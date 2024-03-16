@@ -9,12 +9,19 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
     # ----- Initialize Variables --------------------------------------------------------------------
     #################################################################################################
     sg.theme(theme)
+    screen_width, screen_height = sg.Window.get_screen_size()
+    desired_window_width_proportion, desired_window_height = screen_width * 0.5, (screen_height * 0.125) - 60  # desired_window_height is for how much of the vertical graph is visible, defines the minimum
+ 
     if graph_dimensions is None:
+        # Initial
+        # Left Panel of Sieve tab is ~300 px.  Therefore, window_width ~ 300 + 2*window_margin + canvas_width
+        # where canvas_width = max(_name_graph_x)
+        graph_width = desired_window_width_proportion - 310
         graph_dimensions = {
-            'sx' : 500,
+            'sx' : int(graph_width),
             'sy' : 600,
-            'nx' : 600,
-            'ny' : 1200
+            'nx' : int(graph_width) + 100,
+            'ny' : 3000
         }
     if values is None:
         values = {
@@ -25,18 +32,14 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
             'novelty font' : 14,
             'slider sx' : graph_dimensions['sx'],
             'slider sy' : graph_dimensions['sy'],
+            'manual sx' : graph_dimensions['sx'],
+            'manual sy' : graph_dimensions['sy'],
             'slider nx' : graph_dimensions['nx'],
             'slider ny' : graph_dimensions['ny'],
+            'manual nx' : graph_dimensions['nx'],
+            'manual ny' : graph_dimensions['ny'],
         }
     
-    screen_width, screen_height = sg.Window.get_screen_size()
-    desired_window_width, desired_window_height = screen_width * 0.625, (screen_height * 0.125) - 60  # desired_window_height is for how much of the vertical graph is visible
-    # Left Panel of Sieve tab is ~300 px
-    # Therefore, window_width ~ 300 + 2*window_margin + canvas_width
-    # where canvas_width = max(_name_graph_x)
-    graph_width = desired_window_width - 310
-    graph_dimensions['sx'], graph_dimensions['nx'] = graph_width, graph_width + 100
-    window_width_estimate = 310 + graph_width
 
     slider_values = [values[key] for key in values if key.startswith('slider')]
 
@@ -100,7 +103,7 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
         names_column_layout = []
         for i, name in enumerate(names):
             names_column_layout.append([sg.T(name, background_color=bgColour, font='Courier 12 bold', text_color=black, p=(16, 0)), sg.T("⥂", font='_ 16 bold', background_color=bgColour, p=((0, 16), (0, 0)))])
-            names_column_layout.append([sg.In(k=f'manual {keys[i]}', s=(6, 1), font='Helvetica 8', p=((32, 0),(0, 20)), background_color=white, enable_events=True)])
+            names_column_layout.append([sg.In(k=f'manual {keys[i]}', default_text=values[f'manual {keys[i]}'], s=(6, 1), font='Helvetica 8', p=((32, 0),(0, 20)), background_color=white, enable_events=True)])
         layout = [
             [sg.Column(layout=names_column_layout, background_color=bgColour, vertical_alignment='bottom', p=((0,0), (32,0))),
              sg.Column(layout=make_dimension_sliders_layout(keys, ranges, slider_values, resolutions, tick_intervals), background_color=bgColour)]
@@ -210,7 +213,7 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
     # ----- Settings Layout -------------------------------------------------------------------------
     #################################################################################################
     simple_names = ['Sieve Graph X ', 'Sieve Graph Y ', 'Novelty Graph X', 'Novelty Graph Y']
-    names, ranges, resolutions, tick_intervals = [f'{name:<15}' for name in simple_names], [(100, 2000), (100, 31000), (100, 2000), (100, 31000)], [100, 100, 100, 100], [1900, 30900, 1900, 30900]
+    names, ranges, resolutions, tick_intervals = [f'{name:<15}' for name in simple_names], [(100, screen_width - 400), (100, 31000), (100, screen_width - 400), (100, 31000)], [100, 100, 100, 100], [screen_width - 500, 30900, screen_width - 500, 30900]
 
     graph_dimension_settings_layout = [[sg.Text('Graph Settings', font='Helvetica 14 bold', background_color=bgColour),
          sg.T('Default', k='default graphs', font='Helvetica 12 bold', text_color=black, background_color=bgColour, enable_events=True)]]
@@ -220,7 +223,7 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
 
     theme_selection_layout = [
         [sg.Text('Theme Browser', font='Helvetica 12 bold', background_color=bgColour),
-         sg.T('Default', k='default graphs', font='Helvetica 10 bold', text_color=black, background_color=bgColour, enable_events=True)],
+         sg.T('Default', k='default theme', font='Helvetica 10 bold', text_color=black, background_color=bgColour, enable_events=True)],
         [sg.Text('Click to see a demo window.', background_color=bgColour)],
         [sg.Listbox(values=sg.theme_list(), size=(24, 15), key='theme list', text_color=black, highlight_background_color=black, highlight_text_color=white, sbar_background_color=bgColour, sbar_trough_color=white, sbar_frame_color=black, enable_events=True, background_color=bgColour)],
         [sg.Text('Current theme:', background_color=bgColour), sg.Text(theme, background_color=bgColour, text_color=black)],
