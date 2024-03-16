@@ -314,7 +314,8 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None, m
                 prime_obj.is_prime = False
                 primes_so_far.append(prime_value)
                 prime_obj.factors.append(prime_value)
-                window['found primes'].update(value=uprint.column_print(primes_so_far, 5, string=True))
+                col = (200 // (12 * len(str(max_sieve)))) + 1
+                window['found primes'].update(value=uprint.column_print(primes_so_far, col, string=True))
                 draw_box(prime_obj, graph)
 
                 # move to next step
@@ -380,7 +381,8 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None, m
                 sieve_object.is_prime = False
                 primes_so_far.append(i + 2)
                 sieve_object.factors.append(sieve_object.value)
-        window['found primes'].update(value=uprint.column_print(primes_so_far, 5, string=True))
+        col = (200 // (12 * len(str(max_sieve)))) + 1
+        window['found primes'].update(value=uprint.column_print(primes_so_far, col, string=True))
         # move to next step - finished
         sieve_animation_steps['hurry up'] = False
         sieve_animation_steps['finished'] = True
@@ -504,11 +506,12 @@ def main():
         novelty_graph = window['novelty graph']
 
         # log events and handle closing
-        if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED) and (logging == True or event == 'show values'):
-            print('============ Event = ', event, ' ==============')
-            print('-------- Values Dictionary (key=value) --------')
-            for key in values:
-                print(key, ' = ', values[key])
+        if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
+            print(f'============ Event :: {event} = {values[event] if event in values else None} ==============')
+            if (logging == True or event == 'show values'):
+                print('-------- Values Dictionary (key=value) --------')
+                for key in values:
+                    print(key, ' = ', values[key])
         if event in (None, 'Exit', sg.WINDOW_CLOSED):
             print("[LOG] Clicked Exit!")
             window.close()

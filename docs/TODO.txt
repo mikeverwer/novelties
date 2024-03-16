@@ -1,9 +1,7 @@
-- change program icon to eratosthenes.png
 - Novelty & Sieve title 'buttons' link to relavent article  (either via popup or web link)
 
 - implement settings:
-    SETTINGS DICTIONARY
-    'save settings' - rebuild window
+    update slider values when remaking window via 'build' buttons
 
 - reformat sieve tab
     emulate novelty tab: all controls on the left side, prime list also

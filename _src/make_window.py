@@ -12,8 +12,20 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
     black = '#1b1b1b'  # 
     white = '#dcdcdc'  #
     bgColour = 'gray' 
-    graph_bg_colour = black if mode == 'dark' else white
-    log = f'[WINDOW LOG] {mode = }, {graph_bg_colour = }'
+    if mode == 'dark':
+        graph_bg_colour = black
+        pause = BASE64.pause_dark_mode
+        play = BASE64.play_dark_mode
+        start = BASE64.start_dark_mode
+        clear = BASE64.clear_dark_mode
+    elif mode == 'light':
+        graph_bg_colour = white
+        pause = BASE64.pause_light_mode
+        play = BASE64.play_light_mode
+        start = BASE64.start_light_mode
+        clear = BASE64.clear_light_mode
+
+    log = f'[WINDOW LOG] {mode = }, {graph_bg_colour = }\n'
 
     menu_def = [['&Application', ['&Full Logging','E&xit']],
                 ['&Help', ['&About']]]
@@ -36,7 +48,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
             [sg.T('Conversion:\n'.ljust(20), k='conversion', font='Helvetica 12 bold', background_color=fbc, text_color=black)]
         ], title='', background_color='#e5e4e2', relief='solid', vertical_alignment='bottom')
 
-    left_column = sg.Column(layout=[
+    novelty_left_column = sg.Column(layout=[
             [sg.Text(' The Novelties ', font='Helvetica 18 bold', pad=(5,15), relief='raised', border_width=5)],
             [sg.Push(), sg.Column(layout=[
                 [sg.Text("Enter the largest natural\nnumber to reach: ")],
@@ -51,7 +63,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
     )
 
     novelties_layout = [
-        [sg.vtop(left_column), sg.VerticalSeparator(), sg.Stretch(), novelty_graph_column, sg.T('')]
+        [sg.vtop(novelty_left_column), sg.VerticalSeparator(), sg.Stretch(), novelty_graph_column, sg.T('')]
     ]
     
 # Beginning of Sieve Layout
@@ -61,12 +73,10 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
     ]
     
     sieve_size_selection_layout = [
-        [sg.T('Text Size ', font='Helvetica 10 bold')], 
-        [sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=sieve_size, k='sieve font', enable_events=True, readonly=True)],
-        [sg.T('')]
+        [sg.T('Text Size ', font='Helvetica 12 bold')], 
+        [sg.Push(), sg.DropDown(([2 * i + 10 for i in range(15)]), size=(5, 1), default_value=sieve_size, k='sieve font', enable_events=True, readonly=True), sg.Push()]
     ]
     
-    fbc = '#e5e4e2'  # frame background colour
     sieve_interact_display_frame = sg.Frame(layout=[
             [sg.T('Value:'.ljust(20), k='sieve clicked value', font='Helvetica 14 bold', background_color=fbc, text_color=black)],
             [sg.T('Prime Factors:'.ljust(20), k='sieve clicked primes', font='Helvetica 14 bold', background_color=fbc, text_color=black)]
@@ -83,39 +93,39 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
 
 
     sieve_in_go_clear_pause_layout = [
-        [sg.Text('  To which number shall we search?', font=('Helvetica', 16))],
-        [sg.T(''), sg.Input(key='sieve input', size=(10, 1), default_text=str(sieve_default)),
-         sg.Button('  Begin  ', font='bold', key='go-sieve', button_color='sea green'),
-         sg.Button('Clear', font='bold', k='clear sieve', button_color='firebrick3'),
-         sg.Button('Pause/Play', font='bold', k='pause sieve', button_color='gray50'),
+        [sg.Text('  To which number\n  shall we search?', font=('Helvetica', 16)),
+         sg.Push(), sg.Input(key='sieve input', size=(7, 1), default_text=str(sieve_default), font='Helvetica 14'), sg.Push()],
+        [sg.Push(), sg.Button(image_data=start, font='bold', key='go-sieve'),
+         sg.Button(image_data=pause, font='bold', k='pause sieve'),
+         sg.Button(image_data=clear, font='bold', k='clear sieve'), sg.Push(),
         ]
     ]
+
+    left_layout_sieve = [
+        [sg.Push(), sg.Text(' The Sieve of\n Eratosthenes ', font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, background_color=black, text_color=white, p=((0, 0), (10, 0))), 
+         sg.Column(layout=sieve_size_selection_layout, vertical_alignment='center'), sg.Push()]
+    ]
+
+    left_layout_sieve += [
+        [sg.Column(layout=sieve_in_go_clear_pause_layout)],
+        [sg.Column(layout=speed_slider_layout)],
+        [sieve_interact_display_frame],
+        [sg.Text('Primes found so far:', font='Helvetica 16')],
+        [sg.Column(
+            layout=[
+                [sg.Text(uprint.column_print(primes_so_far, 5, string=True), key='found primes',
+                         font='Courier 14 bold', expand_x=False, size=(50, 100), background_color='gray', relief='raised', p = (5, 0))]
+            ],
+            expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(100, 500), sbar_width=5, sbar_arrow_width=5, sbar_relief='flat')]
+    ]
+
 
     sieve_layout = [
-        [sg.Text(' The Sieve of Eratosthenes ', font=('Helvetica', 18, 'bold'), relief='raised', border_width=5), sg.T('', s=(4, 1)), sieve_interact_display_frame
-        ]
-    ]
-
-    sieve_layout += [
-        [sg.Column(layout=sieve_in_go_clear_pause_layout), sg.T('', s=(1, 1)),
-         sg.Column(layout=speed_slider_layout), sg.T('', s=(1, 1)),
-         sg.Column(layout=sieve_size_selection_layout), sg.T('', s=(1, 1)),
-        ],
-    ]
-
-    sieve_layout += [[sg.Column(
-        layout=[
-            [sg.Stretch(), *sieve_graph_layout, sg.Stretch()]
-        ],
-        scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x + 10, 500), key='sieve column', expand_y=True),
+        [sg.Column(layout=left_layout_sieve),
         sg.Column(
-            layout=[
-                [sg.Text('Primes found so far:', font='Helvetica 16'), sg.T('')],
-                [sg.Text(uprint.column_print(primes_so_far, 5, string=True), key='found primes',
-                         font='Courier 12 bold', expand_x=True, size=(200, 100))]
-            ],
-            expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(215, 500))
-    ]
+            layout=[[sg.Stretch(), *sieve_graph_layout, sg.Stretch()]],
+            scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x + 10, 500), key='sieve column', expand_y=True),
+        ]
     ]  # End of sieve layout
 
    # Settings Layout
@@ -163,7 +173,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
 
     settings_layout = [
         [sg.Text(' Settings ', font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, p=15),
-         sg.Button(image_data=BASE64.save_settings_image, k='save settings', enable_events=True)],
+         sg.Button(image_data=BASE64.save_settings, k='save settings', enable_events=True)],
         [sg.Column(layout=graph_dimension_settings_layout, background_color=bgColour, pad=15),
          sg.Column(layout=theme_selection_layout, background_color=bgColour)
         ]
