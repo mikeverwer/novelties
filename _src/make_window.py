@@ -6,8 +6,10 @@ import BASE64
 # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
 def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_graph_x=1000, sieve_graph_y=10000, novelty_graph_x=1200, novelty_graph_y=10000, sieve_size=14, novelty_size=14, setting_defaults: list = None, mode: str = 'dark'):
     sg.theme(theme)
+    screen_width, screen_height = sg.Window.get_screen_size()
+    window_size_estimate = screen_width * 0.8
     if setting_defaults is None:
-        setting_defaults = [1000, 1000, 1200, 1200]
+        setting_defaults = [1000, 500, 1200, 1200]
     fbc = '#e5e4e2'  # frame background colour, grayish
     black = '#1b1b1b'  # 
     white = '#dcdcdc'  #
@@ -30,6 +32,13 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
     menu_def = [['&Application', ['&Full Logging','E&xit']],
                 ['&Help', ['&About']]]
     right_click_menu_def = [[], ['Edit Me', 'Versions', 'Nothing', 'More Nothing', 'Exit']]
+
+    def titlecard(title, key=None, k=None):
+        if k is not None:
+            key = k
+        bg = black if mode == 'light' else white
+        text = white if mode == 'light' else black
+        return sg.Text(title, key=key, font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, background_color=bg, text_color=text, enable_events=True, p=((0, 0), (10, 0)))
     
     
 
@@ -40,7 +49,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
 
     novelty_graph_column = sg.Column(layout=[
             [sg.Stretch(), novelty_graph, sg.Stretch()]
-        ], scrollable=True, vertical_scroll_only=True, size=(novelty_graph_x + 10, 500), key='novelty column', expand_y=True, expand_x=True
+        ], scrollable=True, vertical_scroll_only=True, size=(novelty_graph_x + 10, 200), key='novelty column', expand_y=True, expand_x=True
     )
 
     novelty_interact_display_frame = sg.Frame(layout=[
@@ -49,7 +58,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
         ], title='', background_color='#e5e4e2', relief='solid', vertical_alignment='bottom')
 
     novelty_left_column = sg.Column(layout=[
-            [sg.Text(' The Novelties ', font='Helvetica 18 bold', pad=(5,15), relief='raised', border_width=5)],
+            [titlecard(' The Novelties ')],
             [sg.Push(), sg.Column(layout=[
                 [sg.Text("Enter the largest natural\nnumber to reach: ")],
                 [sg.Input(key='novelty input', size=(10, 1), default_text=str(novelty_default)), sg.Button('Build', key='generate novelties')],
@@ -74,7 +83,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
     
     sieve_size_selection_layout = [
         [sg.T('Text Size ', font='Helvetica 12 bold')], 
-        [sg.Push(), sg.DropDown(([2 * i + 10 for i in range(15)]), size=(5, 1), default_value=sieve_size, k='sieve font', enable_events=True, readonly=True), sg.Push()]
+        [sg.Push(), sg.DropDown(([2 * i + 10 for i in range(15)]), size=(5, 1), font='Helvetica 14', default_value=sieve_size, k='sieve font', enable_events=True, readonly=True), sg.Push()]
     ]
     
     sieve_interact_display_frame = sg.Frame(layout=[
@@ -102,7 +111,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
     ]
 
     left_layout_sieve = [
-        [sg.Push(), sg.Text(' The Sieve of\n Eratosthenes ', font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, background_color=black, text_color=white, p=((0, 0), (10, 0))), 
+        [sg.Push(), titlecard(' The Sieve of\n Eratosthenes ', k='sieve title'), 
          sg.Column(layout=sieve_size_selection_layout, vertical_alignment='center'), sg.Push()]
     ]
 
@@ -116,7 +125,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
                 [sg.Text(uprint.column_print(primes_so_far, 5, string=True), key='found primes',
                          font='Courier 14 bold', expand_x=False, size=(50, 100), background_color='gray', relief='raised', p = (5, 0))]
             ],
-            expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(100, 500), sbar_width=5, sbar_arrow_width=5, sbar_relief='flat')]
+            expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(100, 200), sbar_width=5, sbar_arrow_width=5, sbar_relief='flat')]
     ]
 
 
@@ -124,13 +133,13 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
         [sg.Column(layout=left_layout_sieve),
         sg.Column(
             layout=[[sg.Stretch(), *sieve_graph_layout, sg.Stretch()]],
-            scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x + 10, 500), key='sieve column', expand_y=True),
+            scrollable=True, vertical_scroll_only=True, size=(sieve_graph_x + 10, 200), key='sieve column', expand_y=True),
         ]
     ]  # End of sieve layout
 
    # Settings Layout
     simple_names = ['Sieve Graph X ', 'Sieve Graph Y ', 'Novelty Graph X', 'Novelty Graph Y']
-    names, ranges, resolutions, tick_intervals = [f'{name:<16}:' for name in simple_names], [(500, 2000), (500, 31000), (500, 2000), (500, 31000)], [100, 500, 100, 500], [1500, 30500, 1500, 30500]
+    names, ranges, resolutions, tick_intervals = [f'{name:<16}:' for name in simple_names], [(100, 2000), (100, 31000), (100, 2000), (100, 31000)], [100, 100, 100, 100], [1900, 30900, 1900, 30900]
 
     names_column_layout = []
     for name in names:
@@ -172,7 +181,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
     ]
 
     settings_layout = [
-        [sg.Text(' Settings ', font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, p=15),
+        [titlecard('Settings'),
          sg.Button(image_data=BASE64.save_settings, k='save settings', enable_events=True)],
         [sg.Column(layout=graph_dimension_settings_layout, background_color=bgColour, pad=15),
          sg.Column(layout=theme_selection_layout, background_color=bgColour)
@@ -181,7 +190,7 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
 
     # Log Layout
     log_layout = [
-        [sg.Text('Log:', font=('Helvetica', 18, 'bold'), relief='raised', border_width=5), sg.Button(' Show Values ', k='show values'), sg.Button('    Clear    ', k='clear log')],
+        [titlecard('Log'), sg.Button(' Show Values ', k='show values'), sg.Button('    Clear    ', k='clear log')],
         [sg.Multiline(size=(60, 15), k='log', font='Courier 8', expand_x=True, expand_y=True, write_only=True,
                       reroute_stdout=True, reroute_stderr=True, echo_stdout_stderr=True, autoscroll=True,
                       auto_refresh=True, default_text=log)]
@@ -199,8 +208,8 @@ def make_window(theme='Default1', sieve_default=200, novelty_default=200, sieve_
                 ]]
 
     layout[-1].append(sg.Sizegrip())
-    window = sg.Window('Primes and Novelties', layout, right_click_menu=right_click_menu_def,
-                       right_click_menu_tearoff=True, grab_anywhere=True, resizable=True, margins=(0, 0),
+    window = sg.Window('Primes and Novelties', layout, right_click_menu=right_click_menu_def, location=((screen_width - window_size_estimate) // 2, 25),
+                       right_click_menu_tearoff=False, grab_anywhere=True, resizable=True, margins=(5, 5),
                        finalize=True, keep_on_top=False, font='Helvetica 10 bold', icon=BASE64.icon)
     window.set_min_size(window.size)
     return window

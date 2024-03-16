@@ -395,7 +395,7 @@ def check_size(graph_height:int, graph_width: int, value: int, char_width: int, 
                 px_width = char_width * px
                 px_height = lines_per_row * px
                 columns = graph_width // px_width
-                rows = (value // columns) + 1
+                rows = (value // columns) + 2
                 required_size = rows * px_height
                 available_rows = (graph_height // px_height) + 1
                 print(f'[LOG] {rows} required rows', end=', ')
@@ -433,7 +433,7 @@ def main():
     current_theme = 'DarkGray4'
     default_theme = current_theme
     new_theme = None
-    main_window = mk.make_window(theme=current_theme, sieve_default=200, novelty_default=200, sieve_graph_x=1_000, sieve_graph_y=3_000, novelty_graph_x=1_200, novelty_graph_y=3_000)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
+    main_window = mk.make_window(theme=current_theme, sieve_default=200, novelty_default=200, sieve_graph_x=1_000, sieve_graph_y=600, novelty_graph_x=1_200, novelty_graph_y=3_000)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
     novelty_graph = main_window['novelty graph']
@@ -454,7 +454,7 @@ def main():
     window = main_window
     chart_open: bool = False
     novelty_objects_NatKey, novelty_objects_NovKey = None, None
-    max_value = None
+    max_novelty = None
     mode = 'dark'
     logging = False
 
@@ -591,12 +591,12 @@ def main():
             if chart_open:
                 chart_window.close()
             try:
-                if max_value is None:
-                    max_value = int(values['novelty input'])
-                primes = soe.sieve_of_eratosthenes(max_value, show=False)  # Build list of primes, useful for primality testing and converting
+                if max_novelty is None:
+                    max_novelty = int(values['novelty input'])
+                primes = soe.sieve_of_eratosthenes(max_novelty, show=False)  # Build list of primes, useful for primality testing and converting
                 prime_ordinals = [i for i in range(1, len(primes) + 1)]
                 chart = uprint.multi_list_print([['e'] + prime_ordinals, ['1'] + primes], cutoff=10, give_string=True, headings_every_row=False)
-                chart_window = conversion_chart_window(chart, max_value)
+                chart_window = conversion_chart_window(chart, max_novelty)
                 windows.append(chart_window)
             except ValueError:
                 pass
@@ -657,12 +657,13 @@ def main():
 
         elif event == 'pause sieve':
             print("[LOG] Clicked Pause/Play")
-            animate_sieve = not animate_sieve
-            old_interval = update_interval
-            if animate_sieve and old_interval is not None:
-                update_interval = old_interval
-            else:  # prevent high refresh rate when idle.
-                update_interval = 1
+            if max_sieve is not None:
+                animate_sieve = not animate_sieve
+                old_interval = update_interval
+                if animate_sieve and old_interval is not None:
+                    update_interval = old_interval
+                else:  # prevent high refresh rate when idle.
+                    update_interval = 1
 
         elif event == 'clear sieve':
             print("[LOG] Clicked Clear.")
