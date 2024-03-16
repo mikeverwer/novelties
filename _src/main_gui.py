@@ -20,10 +20,12 @@ primes = soe.primes_up_to_100()
 black = '#1b1b1b'  # light-mode/dark-mode text/backgrounds
 white = '#dcdcdc'  #
 
-sieve_graph_x = 1000
-sieve_graph_y = 1000
-novelty_graph_x = 1200
-novelty_graph_y = 1000
+graph_dimensions = {
+            'sx' : 500,
+            'sy' : 600,
+            'nx' : 600,
+            'ny' : 1200
+        }
 sieve_font = 'Courier 14'
 novelty_font = 'Courier 14'
 
@@ -77,7 +79,6 @@ def super(number):
         '4': '\u2074', '5': '\u2075', '6': '\u2076', '7': '\u2077',
         '8': '\u2078', '9': '\u2079'
     }
-    # Convert the number to a string
     number_str = str(number)
     return ''.join(superscript_digits.get(digit, digit) for digit in number_str)
 
@@ -178,7 +179,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None, m
         global sieve_value_objects
         column_chars = len(str(largest)) + 1  # was + 2
         pixel_width = column_chars * em
-        number_of_columns = ((sieve_graph_x - (em * 2)) // pixel_width)
+        number_of_columns = ((graph_dimensions['sx'] - (em * 2)) // pixel_width)
         # rows = (largest // number_of_columns) + 1
         numbers = [i for i in range(2, largest + 1)]
 
@@ -433,14 +434,11 @@ def main():
     current_theme = 'DarkGray4'
     default_theme = current_theme
     new_theme = None
-    main_window = mk.make_window(theme=current_theme, sieve_default=200, novelty_default=200, sieve_graph_x=1_000, sieve_graph_y=600, novelty_graph_x=1_200, novelty_graph_y=3_000)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
+    main_window = mk.make_window(theme=current_theme)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
     novelty_graph = main_window['novelty graph']
-    global sieve_graph_x
-    global sieve_graph_y
-    global novelty_graph_x
-    global novelty_graph_y
+    global graph_dimensions
     global animate_sieve
     global animation_speed_sieve
     global primes_so_far
@@ -466,7 +464,7 @@ def main():
         novelty_graph.erase()
         novelties, factorizations = gn.generate_up_to(value)
         order = 'novelty' if values['novelty order'] else 'natural'
-        NatKey, NovKey = make_novelty_objects(novelty_graph_x, novelty_char_width, value, novelty_px, novelties, factorizations)
+        NatKey, NovKey = make_novelty_objects(graph_dimensions['nx'], novelty_char_width, value, novelty_px, novelties, factorizations)
         draw_novelties(window, values, NatKey, NovKey, order, pt=novelty_font, mode=mode)
         return NatKey, NovKey
 
@@ -488,16 +486,7 @@ def main():
         for event in dimensions:
             window[event].update(values[event])  # fix when refactor dimension variables into a dict of dicts/lists
         window['mode'].update(image_data=button_image)
-        
-    
-    def collect_window_args(values, mode):
-        # window args: theme='Default1', sieve_default=200, novelty_default=200, sieve_graph_x=1000, sieve_graph_y=10000, novelty_graph_x=1200, novelty_graph_y=10000, sieve_size=14, novelty_size=14, setting_defaults: list = None
-        global sieve_graph_x
-        global sieve_graph_y
-        global novelty_graph_x
-        global novelty_graph_y
-        # theme='Default1', sieve_default=200, novelty_default=200, sieve_graph_x=1000, sieve_graph_y=10000, novelty_graph_x=1200, novelty_graph_y=10000, sieve_size=14, novelty_size=14, setting_defaults: list = None
-        return [current_theme, values['sieve input'], values['novelty input'], sieve_graph_x, sieve_graph_y, novelty_graph_x, novelty_graph_y, values['sieve font'], values['novelty font'], mode]
+
 
     # This is an Event Loop #################################################################################################
     while True:
@@ -507,11 +496,11 @@ def main():
 
         # log events and handle closing
         if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
-            print(f'============ Event :: {event} = {values[event] if event in values else None} ==============')
+            print(f'============ Event :: {event} : {values[event] if event in values else None} ==============')
             if (logging == True or event == 'show values'):
                 print('-------- Values Dictionary (key=value) --------')
                 for key in values:
-                    print(key, ' = ', values[key])
+                    print(f'\'{key}\' : {values[key]},')
         if event in (None, 'Exit', sg.WINDOW_CLOSED):
             print("[LOG] Clicked Exit!")
             window.close()
@@ -529,9 +518,9 @@ def main():
                 novelty_px = pt_to_px(novelty_font)
                 longest = largest_power_of_2_less_than(max_novelty)
                 novelty_char_width = ((2 * longest) - 1)
-                columns = novelty_graph_x // (novelty_char_width * novelty_font)
+                columns = graph_dimensions['nx'] // (novelty_char_width * novelty_font)
                 # check size
-                required_size, enough_rows = check_size(graph_height=novelty_graph_y, graph_width=novelty_graph_x, value=max_novelty, char_width=novelty_char_width, lines_per_row=4, px=novelty_px, get=True)
+                required_size, enough_rows = check_size(graph_height=graph_dimensions['ny'], graph_width=graph_dimensions['nx'], value=max_novelty, char_width=novelty_char_width, lines_per_row=4, px=novelty_px, get=True)
                 if enough_rows:  # enough rows, build
                     novelty_objects_NatKey, novelty_objects_NovKey = generate_novelties(max_novelty)
                 else:
@@ -542,11 +531,10 @@ def main():
                         popup_event = sg.popup('A larger canvas is needed.\nThis will cause the window to reset.\n\nContinue?\n', title='Warning',
                                         custom_text=('Continue', 'Cancel'), keep_on_top=True)
                         if popup_event == 'Continue':
-                            novelty_graph_y = required_size
+                            graph_dimensions['ny'] = required_size
                             required_size = None  # cleanup
-                            window_args = collect_window_args(values, mode=mode)
                             window.close()
-                            window = mk.make_window(*window_args, mode=mode)
+                            window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
                             window['-TAB GROUP-'].Widget.select(1)
                             set_window(window, values, mode)
                             novelty_objects_NatKey, novelty_objects_NovKey = generate_novelties(max_novelty)
@@ -611,16 +599,16 @@ def main():
                 max_sieve = int(values['sieve input'])
                 px_sieve = pt_to_px(int(sieve_font[-2:]))  # calculate text size in pixels
                 sieve_column_width = len(str(max_sieve)) + 1
-                columns = (sieve_graph_x - (px_sieve * 2)) // (sieve_column_width * px_sieve)
+                columns = (graph_dimensions['sx'] - (px_sieve * 2)) // (sieve_column_width * px_sieve)
                 rows = (max_sieve // columns) + 1
                 print(f'[LOG] {rows*columns = }')
                 # check graph size, remake if too small
                 required_size = (rows + 1) * (2 * px_sieve)
-                available_rows = (sieve_graph_y // (px_sieve * 2)) + 1
+                available_rows = (graph_dimensions['sy'] // (px_sieve * 2)) + 1
                 print(f'[LOG] {rows} required rows', end=', ')
-                print(f"{required_size = }, {sieve_graph_y = }", end=', ')
+                print(f"{required_size = }, {graph_dimensions['sy'] = }", end=', ')
                 print(f"{available_rows = }")
-                if rows <= (sieve_graph_y // (px_sieve * 2)) + 1:  # enough rows
+                if rows <= (graph_dimensions['sy'] // (px_sieve * 2)) + 1:  # enough rows
                     begin_animation(window, values)
                 else:  
                     if required_size > 31_000:  # max canvas size
@@ -630,11 +618,10 @@ def main():
                         popup_event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
                                         custom_text=('Continue', 'Cancel'), keep_on_top=True)
                         if popup_event == 'Continue':
-                            sieve_graph_y = required_size
+                            graph_dimensions['sy'] = required_size
                             required_size = None  # cleanup
-                            window_args = collect_window_args(values, mode)
                             window.close()
-                            window = mk.make_window(*window_args, mode=mode)
+                            window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
                             window['-TAB GROUP-'].Widget.select(0)
                             set_window(window, values, mode)
                             begin_animation(window, values)
@@ -703,14 +690,14 @@ def main():
             parameter = event[-2:]
             if parameter.startswith('s'):
                 if parameter.endswith('x'):
-                    sieve_graph_x = values[event]
+                    graph_dimensions['sx'] = values[event]
                 else:
-                    sieve_graph_y = values[event]
+                    graph_dimensions['sy'] = values[event]
             elif parameter.startswith('n'):
                 if parameter.endswith('x'):
-                    novelty_graph_x = values[event]
+                    graph_dimensions['nx'] = values[event]
                 else:
-                    novelty_graph_y = values[event]
+                    graph_dimensions['ny'] = values[event]
 
         elif event == 'mode':
             print(f"[LOG] Clicked {event}", end=': ')
@@ -733,10 +720,8 @@ def main():
                 if new_theme is None:
                     new_theme = current_theme
                 # get window values
-                window_args = collect_window_args(values, mode)
-                window_args[0] = new_theme
                 window.close()
-                window = mk.make_window(*window_args, mode=mode)
+                window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
                 window['-TAB GROUP-'].Widget.select(2)
                 current_theme, values['theme list'] = new_theme, new_theme
                 set_window(window, values, mode)
