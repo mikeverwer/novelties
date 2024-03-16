@@ -2,9 +2,8 @@
 
 - implement settings:
     update slider values when remaking window via 'build' buttons
-
-- reformat sieve tab
-    emulate novelty tab: all controls on the left side, prime list also
+    re-add manual input values  
+        will need to round to nearest 100
 
 - update readme
     installation instructions
