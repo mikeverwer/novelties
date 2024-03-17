@@ -8,6 +8,7 @@ import brightness
 import BASE64
 # import sieve_animation
 import PySimpleGUI as sg
+import webbrowser
 import time
 import random
 
@@ -608,6 +609,8 @@ def main():
     #################################################################################################
     # ----- Sieve Tab -------------------------------------------------------------------------------
     #################################################################################################
+        elif event == 'sieve title':
+            webbrowser.open('https://github.com/mikeverwer/novelties/blob/main/README.md#why')
         elif event == 'go-sieve':
             print(f"[LOG] Clicked {event}")
             try:
