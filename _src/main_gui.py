@@ -166,7 +166,7 @@ def draw_box(thing, graph, box_colour='#dcdcdc', line_width=2, xoffset=0, yoffse
     return l1, l2, l3, l4
 
 
-def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None, mode = 'dark'):
+def sieve_animation(window: sg.Window, values, max_sieve, em: int = 16, outline_ids=None, mode = 'dark'):
     text_colour = white if mode == 'dark' else black
     graph = window['sieve graph']
     global update_interval
@@ -266,6 +266,7 @@ def sieve_animation(window, values, max_sieve, em: int = 16, outline_ids=None, m
         height = center[1] + h_offset
         graph.draw_line((center[0] - (length / 2), height),
                         (center[0] + (length / 2), height), line_colour, width=2)
+        graph.draw_text(str(word.value), word.coord, font=sieve_font + ' bold', color=text_colour)
 
     speed_index = int(values['sieve speed'])
     animation_speed_sieve = float(eval(sieve_speed_ticks[speed_index]))
