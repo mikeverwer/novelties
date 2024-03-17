@@ -436,7 +436,8 @@ def main():
     current_theme = 'DarkGray4'
     default_theme = current_theme
     new_theme = None
-    main_window = mk.make_window(theme=default_theme)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
+    global primes_so_far
+    main_window = mk.make_window(sg, theme=default_theme, primes_so_far=primes_so_far)  # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
     windows = [main_window]
     sieve_graph = main_window['sieve graph']
     novelty_graph = main_window['novelty graph']
@@ -444,7 +445,6 @@ def main():
     global graph_dimensions
     global animate_sieve
     global animation_speed_sieve
-    global primes_so_far
     global sieve_font
     global sieve_speed_ticks
     global update_interval
@@ -549,7 +549,7 @@ def main():
                             graph_dimensions['ny'] = int(required_size)
                             required_size = None  # cleanup
                             window.close()
-                            window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
+                            window = mk.make_window(sg, current_theme, values, graph_dimensions, mode=mode, primes_so_far=primes_so_far)
                             window['-TAB GROUP-'].Widget.select(1)
                             set_window(window, values, graph_dimensions, mode)
                             novelty_objects_NatKey, novelty_objects_NovKey = generate_novelties(max_novelty)
@@ -637,7 +637,7 @@ def main():
                             graph_dimensions['sy'] = required_size
                             required_size = None  # cleanup
                             window.close()
-                            window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
+                            window = mk.make_window(sg, current_theme, values, graph_dimensions, mode=mode, primes_so_far=primes_so_far)
                             window['-TAB GROUP-'].Widget.select(0)
                             set_window(window, values, graph_dimensions, mode)
                             begin_animation(window, values)
@@ -763,7 +763,7 @@ def main():
                 for key in graph_dimensions:
                     graph_dimensions[key] = int(values[f'manual {key[-2:]}'])
                 window.close()
-                window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
+                window = mk.make_window(sg, current_theme, values, graph_dimensions, mode=mode, primes_so_far=primes_so_far)
                 window['-TAB GROUP-'].Widget.select(2)
                 set_window(window, values, graph_dimensions, mode)
             else:

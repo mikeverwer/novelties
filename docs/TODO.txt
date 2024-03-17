@@ -1,10 +1,5 @@
 - Novelty & Sieve title 'buttons' link to relavent article  (either via popup or web link)
 
-- implement settings:
-    update slider values when remaking window via 'build' buttons
-    re-add manual input values  
-        will need to round to nearest 100
-
 - update readme
     installation instructions
     sieve of eratosthenese writeup 

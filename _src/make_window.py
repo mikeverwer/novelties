@@ -1,14 +1,15 @@
+from types import ModuleType
 import usefull_prints as uprint
-from main_gui import sg, primes_so_far
-
 import BASE64
 
 # themes: DarkGrey4, DarkGrey9, GrayGrayGray, LightGray1, TealMono
-def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = None, mode: str = 'dark'):
+def make_window(sg: ModuleType, theme='Default1', values: dict=None, graph_dimensions: dict = None, mode: str = 'dark', primes_so_far=None):
     #################################################################################################
     # ----- Initialize Variables --------------------------------------------------------------------
     #################################################################################################
     sg.theme(theme)
+    if primes_so_far is None:
+        primes_so_far = ' None'
     screen_width, screen_height = sg.Window.get_screen_size()
     desired_window_width_proportion, desired_window_height = screen_width * 0.5, (screen_height * 0.125) - 60  # desired_window_height is for how much of the vertical graph is visible, defines the minimum
  
@@ -189,6 +190,7 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
          sg.Column(layout=sieve_size_selection_layout, vertical_alignment='center'), sg.Push()]
     ]
 
+    col = (200 // (12 * len(str(primes_so_far[-1])))) + 1
     left_layout_sieve += [
         [sg.Column(layout=sieve_in_go_clear_pause_layout)],
         [sg.Push(), sg.Column(layout=speed_slider_layout), sg.Push()],
@@ -196,7 +198,7 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
         [sg.Text('Primes found so far:', font='Helvetica 16', p=((8, 0), (4, 0)))],
         [sg.Column(
             layout=[
-                [sg.Text(uprint.column_print(primes_so_far, 5, string=True), key='found primes',
+                [sg.Text(uprint.column_print(primes_so_far, col, string=True), key='found primes',
                          font='Courier 14 bold', expand_x=False, size=(50, 100), background_color='gray', relief='raised', p = (5, 0))]
             ],
             expand_x=True, expand_y=True, vertical_scroll_only=True, scrollable=True, size=(100, 200), sbar_width=5, sbar_arrow_width=5, sbar_relief='flat')]
@@ -274,7 +276,8 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
 
 
 def main():
-    window = make_window('DarkGrey')
+    import PySimpleGUI as sg
+    window = make_window(sg, 'DarkGrey')
     update_interval = 1
     # This is an Event Loop #################################################################################################
     while True:
