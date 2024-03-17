@@ -475,6 +475,7 @@ def main():
         sieve_graph = window['sieve graph']
         reset_globals(set_interval=1000, speed=values['sieve speed'])
         window['found primes'].update(value='None')
+        window['pause sieve'].update(disabled=False)
         sieve_graph.erase()
         animate_sieve = True
         sieve_animation_steps['find coordinates'] = True
@@ -498,6 +499,14 @@ def main():
         event, values = window.read(timeout=1000 // update_interval)
         sieve_graph = window['sieve graph']
         novelty_graph = window['novelty graph']
+        sieve_graph.grab_anywhere_exclude()
+        novelty_graph.grab_anywhere_exclude()
+        if mode == 'dark':
+            pause = BASE64.pause_dark_mode
+            play = BASE64.play_dark_mode
+        elif mode == 'light':
+            pause = BASE64.pause_light_mode
+            play = BASE64.play_light_mode
 
         # log events and handle closing
         if event not in (sg.TIMEOUT_EVENT, sg.WIN_CLOSED):
@@ -537,7 +546,7 @@ def main():
                         popup_event = sg.popup('A larger canvas is needed.\nThis will cause the window to reset.\n\nContinue?\n', title='Warning',
                                         custom_text=('Continue', 'Cancel'), keep_on_top=True)
                         if popup_event == 'Continue':
-                            graph_dimensions['ny'] = required_size
+                            graph_dimensions['ny'] = int(required_size)
                             required_size = None  # cleanup
                             window.close()
                             window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
@@ -653,6 +662,8 @@ def main():
             print("[LOG] Clicked Pause/Play")
             if max_sieve is not None:
                 animate_sieve = not animate_sieve
+                button_image = pause if animate_sieve else play
+                window['pause sieve'].update(image_data=button_image)
                 old_interval = update_interval
                 if animate_sieve and old_interval is not None:
                     update_interval = old_interval
@@ -731,6 +742,11 @@ def main():
             new_theme = values[event][0]
             sg.change_look_and_feel(values['theme list'][0])
             sg.popup_get_text('This is {}'.format(values['theme list'][0]))
+        
+        elif event == 'default theme':
+            new_theme = default_theme
+            sg.change_look_and_feel(default_theme)
+            sg.popup_get_text(f'This is {default_theme}')
 
         elif event == 'save settings':
             print(f"[LOG] Clicked {event}")
@@ -739,11 +755,16 @@ def main():
             if popup_event == 'OK':
                 if new_theme is None:
                     new_theme = current_theme
+                current_theme, values['theme list'] = new_theme, new_theme
+                new_theme = None
                 # get window values
+                graph_dimensions['sx'], graph_dimensions['sy'] = sieve_graph.get_size()
+                graph_dimensions['nx'], graph_dimensions['ny'] = novelty_graph.get_size()
+                for key in graph_dimensions:
+                    graph_dimensions[key] = int(values[f'manual {key[-2:]}'])
                 window.close()
                 window = mk.make_window(current_theme, values, graph_dimensions, mode=mode)
                 window['-TAB GROUP-'].Widget.select(2)
-                current_theme, values['theme list'] = new_theme, new_theme
                 set_window(window, values, graph_dimensions, mode)
             else:
                 pass

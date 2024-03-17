@@ -40,8 +40,7 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
             'manual ny' : graph_dimensions['ny'],
         }
     
-
-    slider_values = [values[key] for key in values if key.startswith('slider')]
+    slider_values = [graph_dimensions[key] for key in graph_dimensions]
 
     fbc = '#e5e4e2'  # frame background colour, grayish
     black = '#1b1b1b'  # 
@@ -53,12 +52,14 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
         play = BASE64.play_dark_mode
         start = BASE64.start_dark_mode
         clear = BASE64.clear_dark_mode
+        build = BASE64.build_dark_mode
     elif mode == 'light':
         graph_bg_colour = white
         pause = BASE64.pause_light_mode
         play = BASE64.play_light_mode
         start = BASE64.start_light_mode
         clear = BASE64.clear_light_mode
+        build = BASE64.build_light_mode
 
     log = f'[WINDOW LOG] {mode = }, {graph_bg_colour = }\n'
 
@@ -102,8 +103,8 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
     def make_graph_settings_layout(names, keys: list, ranges, slider_values, resolutions, tick_intervals):
         names_column_layout = []
         for i, name in enumerate(names):
-            names_column_layout.append([sg.T(name, background_color=bgColour, font='Courier 12 bold', text_color=black, p=(16, 0)), sg.T("⥂", font='_ 16 bold', background_color=bgColour, p=((0, 16), (0, 0)))])
-            names_column_layout.append([sg.In(k=f'manual {keys[i]}', default_text=values[f'manual {keys[i]}'], s=(6, 1), font='Helvetica 8', p=((32, 0),(0, 20)), background_color=white, enable_events=True)])
+            names_column_layout.append([sg.T(name, background_color=bgColour, font='Helvetica 12 bold', text_color=black, p=(16, 0)), sg.Image(data=BASE64.x_axis if i % 2 == 0 else BASE64.y_axis, pad=((16, 32), (4, 0)), background_color=bgColour)])
+            names_column_layout.append([sg.In(k=f'manual {keys[i]}', default_text=values[f'manual {keys[i]}'], s=(6, 1), font='Helvetica 8', p=((32, 0),(0, 20)), border_width=0, background_color=bgColour, enable_events=True)])
         layout = [
             [sg.Column(layout=names_column_layout, background_color=bgColour, vertical_alignment='bottom', p=((0,0), (32,0))),
              sg.Column(layout=make_dimension_sliders_layout(keys, ranges, slider_values, resolutions, tick_intervals), background_color=bgColour)]
@@ -115,11 +116,12 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
     #################################################################################################
     novelty_graph = sg.Graph(
             (graph_dimensions['nx'], graph_dimensions['ny']), (0, graph_dimensions['ny']), (graph_dimensions['nx'], 0),
-            background_color=graph_bg_colour, key='novelty graph', expand_y=True, enable_events=True)  # colour AliceBlue
+            background_color=graph_bg_colour, key='novelty graph', expand_y=True, expand_x=True, enable_events=True)  # colour AliceBlue
 
     novelty_graph_column = sg.Column(layout=[
             [sg.Stretch(), novelty_graph, sg.Stretch()]
-        ], scrollable=True, vertical_scroll_only=True, size=(graph_dimensions['nx'] + 10, desired_window_height), key='novelty column', expand_y=True, expand_x=True
+        ], scrollable=True, vertical_scroll_only=True, size=(graph_dimensions['nx'] + 10, desired_window_height), key='novelty column', expand_y=True, expand_x=True, 
+        sbar_width=10, sbar_arrow_width=10, sbar_relief='flat', sbar_arrow_color=black if mode == 'dark' else white, sbar_background_color=black if mode == 'dark' else white, sbar_trough_color='gray' if mode == 'light' else None
     )
 
     novelty_interact_display_frame = sg.Frame(layout=[
@@ -130,12 +132,12 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
     novelty_left_column = sg.Column(layout=[
             [sg.Push(), titlecard(' The Novelties '), sg.Push()],
             [sg.Push(), sg.Column(layout=[
-                [sg.Text("Enter the largest natural\nnumber to reach: ")],
-                [sg.Input(key='novelty input', size=(10, 1), default_text=str(values['novelty input'])), sg.Button('Build', key='generate novelties')],
-                [sg.T('Font Size:'), sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=values['novelty font'], k='novelty font', enable_events=True, readonly=True)]
+                [sg.Text("Enter the largest\nnumber to reach: ", font='_ 14 bold')],
+                [sg.Input(key='novelty input', size=(7, 1), default_text=str(values['novelty input']), font='_ 14'), sg.Button(image_data=build, key='generate novelties')],
+                [sg.T('Font Size:', font='Helvetica 12 bold', p=((4, 22), (0, 0)), ), sg.DropDown(([2 * i + 10 for i in range(15)]), size=(4, 1), default_value=values['novelty font'], k='novelty font', font='_ 12', enable_events=True, readonly=True)]
                 ])
             ],
-            [sg.Radio('Natural\nOrdering', 'RADIO1', k='natural order', default=True, enable_events=True), sg.Radio('Novelty\nOrdering', 'RADIO1', k='novelty order', enable_events=True)],
+            [sg.Push(), sg.Radio('Natural\nOrdering', 'RADIO1', k='natural order', default=True, enable_events=True), sg.Radio('Novelty\nOrdering', 'RADIO1', k='novelty order', enable_events=True), sg.Push()],
             [sg.Push(), novelty_interact_display_frame, sg.Push()],
             [sg.Push(), sg.Button('Oridinal to Prime\nConversion Chart', k='-SHOW CHART-', s=(14, 2)), sg.Push()],
         ], expand_x=True
@@ -162,7 +164,7 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
             [sg.T('Value:'.ljust(20), k='sieve clicked value', font='Helvetica 14 bold', background_color=fbc, text_color=black)],
             [sg.T('Prime Factors:'.ljust(20), k='sieve clicked primes', font='Helvetica 14 bold', background_color=fbc, text_color=black)]
             ],
-                title='', background_color='#e5e4e2', relief='solid', vertical_alignment='bottom')
+                p=((16, 0), (0, 0)), title='', background_color='#e5e4e2', relief='solid', vertical_alignment='bottom')
     
     
     tick_positions = ['1/4', '1/2', '1', '2', '4', '8', '16', ' 32']
@@ -174,24 +176,24 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
 
 
     sieve_in_go_clear_pause_layout = [
-        [sg.Text('  To which number\n  shall we search?', font=('Helvetica', 16)),
-         sg.Push(), sg.Input(key='sieve input', size=(7, 1), default_text=str(values['sieve input']), font='Helvetica 14'), sg.Push()],
+        [sg.Text('  To which number\n  shall we search?', font='Helvetica 14 bold', p=((4, 22), (0, 0))),
+         sg.Input(key='sieve input', size=(7, 1), default_text=str(values['sieve input']), font='Helvetica 14')],
         [sg.Push(), sg.Button(image_data=start, font='bold', key='go-sieve'),
-         sg.Button(image_data=pause, font='bold', k='pause sieve'),
+         sg.Button(image_data=pause, font='bold', k='pause sieve', disabled=True),
          sg.Button(image_data=clear, font='bold', k='clear sieve'), sg.Push(),
         ]
     ]
 
     left_layout_sieve = [
-        [sg.Push(), titlecard(' The Sieve of\n Eratosthenes ', k='sieve title'), 
+        [sg.Push(), titlecard(' The Sieve of\n Eratosthenes ', k='sieve title', p=((0, 8), (10, 0))), 
          sg.Column(layout=sieve_size_selection_layout, vertical_alignment='center'), sg.Push()]
     ]
 
     left_layout_sieve += [
         [sg.Column(layout=sieve_in_go_clear_pause_layout)],
-        [sg.Column(layout=speed_slider_layout)],
+        [sg.Push(), sg.Column(layout=speed_slider_layout), sg.Push()],
         [sieve_interact_display_frame],
-        [sg.Text('Primes found so far:', font='Helvetica 16')],
+        [sg.Text('Primes found so far:', font='Helvetica 16', p=((8, 0), (4, 0)))],
         [sg.Column(
             layout=[
                 [sg.Text(uprint.column_print(primes_so_far, 5, string=True), key='found primes',
@@ -205,7 +207,8 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
         [sg.Column(layout=left_layout_sieve),
         sg.Column(
             layout=[[sg.Stretch(), *sieve_graph_layout, sg.Stretch()]],
-            scrollable=True, vertical_scroll_only=True, size=(graph_dimensions['sx'] + 10, desired_window_height), key='sieve column', expand_y=True),
+            scrollable=True, vertical_scroll_only=True, size=(graph_dimensions['sx'] + 10, desired_window_height), key='sieve column', expand_y=True,
+            sbar_width=10, sbar_arrow_width=10, sbar_relief='flat', sbar_arrow_color=black if mode == 'dark' else white, sbar_background_color=black if mode == 'dark' else white, sbar_trough_color='gray' if mode == 'light' else None),
         ]
     ]  # End of sieve layout
 
@@ -217,9 +220,9 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
 
     graph_dimension_settings_layout = [[sg.Text('Graph Settings', font='Helvetica 14 bold', background_color=bgColour),
          sg.T('Default', k='default graphs', font='Helvetica 12 bold', text_color=black, background_color=bgColour, enable_events=True)]]
-    graph_dimension_settings_layout += make_graph_settings_layout(names[0:2], ['sx', 'sy'], ranges, slider_values, resolutions, tick_intervals) 
+    graph_dimension_settings_layout += make_graph_settings_layout(names[0:2], ['sx', 'sy'], ranges[0:2], slider_values[0:2], resolutions[0:2], tick_intervals[0:2]) 
     graph_dimension_settings_layout += [[sg.HorizontalSeparator(color=black)]]
-    graph_dimension_settings_layout += make_graph_settings_layout(names[2:4], ['nx', 'ny'], ranges, slider_values, resolutions, tick_intervals)
+    graph_dimension_settings_layout += make_graph_settings_layout(names[2:4], ['nx', 'ny'], ranges[2:4], slider_values[2:4], resolutions[2:4], tick_intervals[2:4])
 
     theme_selection_layout = [
         [sg.Text('Theme Browser', font='Helvetica 12 bold', background_color=bgColour),
@@ -241,20 +244,20 @@ def make_window(theme='Default1', values: dict=None, graph_dimensions: dict = No
     # ----- Log Layout ------------------------------------------------------------------------------
     #################################################################################################
     log_layout = [
-        [titlecard('Log'), sg.Button(' Show Values ', k='show values'), sg.Button('    Clear    ', k='clear log')],
+        [titlecard(' Log ', p=(16, 10)), sg.Button(' Show Values ', k='show values'), sg.Button('    Clear    ', k='clear log')],
         [sg.Multiline(size=(60, 15), k='log', font='Courier 8', expand_x=True, expand_y=True, write_only=True,
                       reroute_stdout=True, reroute_stderr=True, echo_stdout_stderr=True, autoscroll=True,
-                      auto_refresh=True, default_text=log)]
+                      sbar_width=10, sbar_arrow_width=10, sbar_relief='flat', auto_refresh=True, default_text=log)]
     ]
 
     layout = [[sg.MenubarCustom(menu_def, key='-MENU-', font='Courier 15', tearoff=False)],
               ]
 
-    layout += [[sg.TabGroup([[sg.Tab('Sieve', sieve_layout),
-                              sg.Tab('The Novelties', novelties_layout),
+    layout += [[sg.TabGroup([[sg.Tab('  Sieve  ', sieve_layout),
+                              sg.Tab('Novelties', novelties_layout),
                               sg.Tab('Settings', settings_layout),
-                              sg.Tab('Log', log_layout)
-                              ]], key='-TAB GROUP-', expand_x=True, expand_y=True
+                              sg.Tab('   Log    ', log_layout)
+                              ]], key='-TAB GROUP-', expand_x=True, expand_y=True, font = 'Helvetica 12 bold', title_color=black, tab_background_color='gray', selected_background_color=black if mode == 'dark' else white, selected_title_color=white if mode =='dark' else black
                             ),
                 ]]
 
