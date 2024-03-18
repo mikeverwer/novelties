@@ -131,7 +131,7 @@ def make_window(sg: ModuleType, theme='Default1', values: dict=None, graph_dimen
         ], title='', background_color='#e5e4e2', relief='solid', vertical_alignment='bottom')
 
     novelty_left_column = sg.Column(layout=[
-            [sg.Push(), titlecard(' The Novelties '), sg.Push()],
+            [sg.Push(), titlecard(' The Novelties ', rcm=['', ['Read about the Novelties']]), sg.Push()],
             [sg.Push(), sg.Column(layout=[
                 [sg.Text("Enter the largest\nnumber to reach: ", font='_ 14 bold')],
                 [sg.Input(key='novelty input', size=(7, 1), default_text=str(values['novelty input']), font='_ 14'), sg.Button(image_data=build, key='generate novelties')],
@@ -186,7 +186,7 @@ def make_window(sg: ModuleType, theme='Default1', values: dict=None, graph_dimen
     ]
 
     left_layout_sieve = [
-        [sg.Push(), titlecard(' The Sieve of\n Eratosthenes ', k='sieve title', p=((0, 8), (10, 0))), 
+        [sg.Push(), titlecard(' The Sieve of\n Eratosthenes ', rcm=['', ['Read about the Sieve of Eratosthenes']], p=((0, 8), (10, 0))), 
          sg.Column(layout=sieve_size_selection_layout, vertical_alignment='center'), sg.Push()]
     ]
 
@@ -252,7 +252,7 @@ def make_window(sg: ModuleType, theme='Default1', values: dict=None, graph_dimen
                       sbar_width=10, sbar_arrow_width=10, sbar_relief='flat', auto_refresh=True, default_text=log)]
     ]
 
-    layout = [[sg.MenubarCustom(menu_def, key='-MENU-', font='Courier 15', tearoff=False)],
+    layout = [[sg.MenubarCustom(menu_def, key='-MENU-', font='Helvetica 12', tearoff=False)],
               ]
 
     layout += [[sg.TabGroup([[sg.Tab('  Sieve  ', sieve_layout, k='sieve tab'),

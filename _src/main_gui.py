@@ -619,8 +619,6 @@ def main():
     #################################################################################################
     # ----- Sieve Tab -------------------------------------------------------------------------------
     #################################################################################################
-        elif event == 'sieve title':
-            webbrowser.open('https://mikeverwer.github.io/programs/novelties/novelties.html')
         elif event == 'go-sieve' or (event == 'enter' and values['-TAB GROUP-'] == 'sieve tab'):
             print(f"[LOG] Clicked {event}")
             try:
@@ -789,7 +787,10 @@ def main():
         elif event == 'clear log':
             print(f"[LOG] Clicked {event}")
             window['log'].update(value='')
-        
+
+    #################################################################################################
+    # ----- Key Binds/Titlebar/Misc. ----------------------------------------------------------------
+    #################################################################################################
         elif event == "Full Logging":
             print(f"[LOG] Clicked {event}, {not logging}")
             logging =  not logging
@@ -797,9 +798,12 @@ def main():
         elif event == 'About':
             sg.popup_no_buttons(about_text, title='About Me', icon=BASE64.icon, font= '_ 12')
 
-    #################################################################################################
-    # ----- Key Binds -------------------------------------------------------------------------------
-    #################################################################################################
+        elif event == 'Read about the Sieve of Eratosthenes':
+            webbrowser.open('https://mikeverwer.github.io/programs/novelties/novelties.html')
+        
+        elif event == 'Read about the Novelties':
+            webbrowser.open('https://mikeverwer.github.io/programs/novelties/novelties.html')
+
         elif str(event).startswith("change tab"):
             next_tab_name = event.split()[2]
             next_tab = tab_names[next_tab_name + ' tab']

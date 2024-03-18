@@ -61,7 +61,7 @@ def main():
     mline:sg.Multiline = window[MLINE_KEY]
 
     while True:
-        event, values = window.read()       # type: (str, dict)
+        event, values = window.read()  # type: (str, dict)
         if event in (sg.WIN_CLOSED, 'Exit'):
             break
 
