@@ -71,14 +71,14 @@ def make_window(sg: ModuleType, theme='Default1', values: dict=None, graph_dimen
     #################################################################################################
     # ----- Define Functions ------------------------------------------------------------------------
     #################################################################################################
-    def titlecard(title, key=None, k=None, pad=((0, 0), (10, 0)), p=None):
+    def titlecard(title, key=None, k=None, pad=((0, 0), (10, 0)), p=None, rcm=None):
         if k is not None:
             key = k
         if p is not None:
             pad = p
         bg = black if mode == 'light' else white
         text = white if mode == 'light' else black
-        return sg.Text(title, key=key, font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, background_color=bg, text_color=text, enable_events=True, p=pad)
+        return sg.Text(title, key=key, font=('Helvetica', 18, 'bold'), relief='raised', border_width=5, background_color=bg, text_color=text, enable_events=True, p=pad, right_click_menu=rcm)
     
     def make_dimension_sliders_layout(keys: list, ranges, slider_values, resolutions, tick_intervals):
         layout = [
@@ -255,15 +255,17 @@ def make_window(sg: ModuleType, theme='Default1', values: dict=None, graph_dimen
     layout = [[sg.MenubarCustom(menu_def, key='-MENU-', font='Courier 15', tearoff=False)],
               ]
 
-    layout += [[sg.TabGroup([[sg.Tab('  Sieve  ', sieve_layout),
-                              sg.Tab('Novelties', novelties_layout),
-                              sg.Tab('Settings', settings_layout),
-                              sg.Tab('   Log    ', log_layout)
-                              ]], key='-TAB GROUP-', expand_x=True, expand_y=True, font = 'Helvetica 12 bold', title_color=black, tab_background_color='gray', 
+    layout += [[sg.TabGroup([[sg.Tab('  Sieve  ', sieve_layout, k='sieve tab'),
+                              sg.Tab('Novelties', novelties_layout, k='novelty tab'),
+                              sg.Tab('Settings', settings_layout, k='settings tab'),
+                              sg.Tab('   Log    ', log_layout, k='log tab')
+                              ]], key='-TAB GROUP-', expand_x=True, expand_y=True, font = 'Helvetica 12 bold', title_color=black, tab_background_color='gray' if mode == 'dark' else white, 
                               selected_background_color=black if mode == 'dark' else white, selected_title_color=white if mode =='dark' else black,
 
                             ),
                 ]]
+
+    layout += [[sg.Push(), sg.Image(data=BASE64.author)]]
 
     layout[-1].append(sg.Sizegrip())
 
@@ -274,6 +276,19 @@ def make_window(sg: ModuleType, theme='Default1', values: dict=None, graph_dimen
                        right_click_menu_tearoff=False, grab_anywhere=True, resizable=True, margins=(5, 5),
                        finalize=True, keep_on_top=False, font='Helvetica 10 bold', icon=BASE64.icon)
     window.set_min_size(window.size)
+    
+    #################################################################################################
+    # ----- Key Bindings ----------------------------------------------------------------------------
+    #################################################################################################
+    window.bind("<s>", 'change tab sieve tab')  # seive tab
+    window.bind("<n>", 'change tab novelty tab')  # novelty tab
+    window.bind("<t>", 'change tab settings tab')  # settings tab
+    window.bind("<l>", 'change tab log tab')  # log tab
+    window.bind("<space>", "spacebar")  # bind to play/pause
+    window.bind("<period>", "speed up")  
+    window.bind("<comma>", "speed down")
+    window.bind("<Return>", "enter")    # begin, either tab
+
     return window
 
 

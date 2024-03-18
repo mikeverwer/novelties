@@ -303,7 +303,7 @@ def sieve_animation(window: sg.Window, values, max_sieve, em: int = 16, outline_
             if prime_value >= max_sieve ** 0.5:
                 if sieve_animation_steps['hurry up'] is None:
                     choice = sg.popup('\nWe have reached a point where the only remaining numbers are prime.\n\n'
-                                      'Fast forward to the end?\n', title='',
+                                      'Fast forward to the end?\n', title='', icon=BASE64.icon,
                                       custom_text=('Yes, please.', 'No, thanks.'),
                                       keep_on_top=True)
                     sieve_animation_steps['hurry up'] = True if choice == 'Yes, please' else False
@@ -435,6 +435,7 @@ def convert_factors_to_string(prime_dict):
 # MAIN
 #################################################################################################
 def main():
+    about_text = 'Made by Mike Verwer;\nPT-Professor of Mathematics and Statistics @ Mohawk College\n\n\ncontact:   mike.verwer@mohawkcollege.ca\ngithub:     github.com\mikeverwer\nwebsite:  mikeverwer.github.io\n\n\n© 2024 Mike Verwer'
     current_theme = 'DarkGray4'
     default_theme = current_theme
     new_theme = None
@@ -459,10 +460,15 @@ def main():
     max_novelty = None
     mode = 'dark'
     logging = False
+    tab_names = {'sieve tab': 0,
+                 'novelty tab': 1,
+                 'settings tab': 2,
+                 'log tab': 3}
+    animation_start = False
 
     def too_big(columns, pt, lines_per_row):
         largest_possible = (31_000 // (pt * lines_per_row)) * columns
-        sg.popup(f'Can not make a large enough canvas.\nAt {pt} pt font, the largest value that can be displayed is {largest_possible}\n\nTry selecting a smaller font size, or input a lower value.', title='Warning', custom_text=('    Ok    '), keep_on_top=True)
+        sg.popup(f'Can not make a large enough canvas.\nAt {pt} pt font, the largest value that can be displayed is {largest_possible}\n\nTry selecting a smaller font size, or input a lower value.\nYou can also make the graph wider in Settings.\n\n', title='Warning', custom_text=('    Ok    '), keep_on_top=True, any_key_closes=True, icon=BASE64.icon)
 
     def generate_novelties(value: int):
         novelty_graph.erase()
@@ -481,6 +487,7 @@ def main():
         sieve_graph.erase()
         animate_sieve = True
         sieve_animation_steps['find coordinates'] = True
+        return True
     
     def set_window(window, values, graph_dimensions:dict, mode='dark'):
         button_image = BASE64.dark_mode if mode == 'dark' else BASE64.light_mode
@@ -526,7 +533,7 @@ def main():
     #################################################################################################
     # ----- Novelty Tab -----------------------------------------------------------------------------
     #################################################################################################
-        elif event == 'generate novelties':
+        elif event == 'generate novelties' or (event == 'enter' and values['-TAB GROUP-'] == 'novelty tab'):
             print("[LOG] Clicked Build.")
             if values['novelty input'].isnumeric():
                 graph_dimensions['nx'], graph_dimensions['ny'] = novelty_graph.get_size()
@@ -546,8 +553,11 @@ def main():
                         pass
                     else:    
                         popup_event = sg.popup('A larger canvas is needed.\nThis will cause the window to reset.\n\nContinue?\n', title='Warning',
-                                        custom_text=('Continue', 'Cancel'), keep_on_top=True)
+                                        custom_text=('Continue', 'Cancel'), keep_on_top=True, icon=BASE64.icon)
                         if popup_event == 'Continue':
+                            # get graph dimensions
+                            for key in graph_dimensions:
+                                graph_dimensions[key] = int(values[f'manual {key[-2:]}'])
                             graph_dimensions['ny'] = int(required_size)
                             required_size = None  # cleanup
                             window.close()
@@ -590,7 +600,6 @@ def main():
                             print(f"[LOG] {value_object}")
                             found = True
 
-
         elif event == '-SHOW CHART-':
             print(f"[LOG] Clicked {event}")
             if chart_open:
@@ -612,7 +621,7 @@ def main():
     #################################################################################################
         elif event == 'sieve title':
             webbrowser.open('https://mikeverwer.github.io/programs/novelties/novelties.html')
-        elif event == 'go-sieve':
+        elif event == 'go-sieve' or (event == 'enter' and values['-TAB GROUP-'] == 'sieve tab'):
             print(f"[LOG] Clicked {event}")
             try:
                 graph_dimensions['sx'], graph_dimensions['sy'] = sieve_graph.get_size()
@@ -629,22 +638,25 @@ def main():
                 print(f"{required_size = }, {graph_dimensions['sy'] = }", end=', ')
                 print(f"{available_rows = }")
                 if rows <= (graph_dimensions['sy'] // (px_sieve * 2)) + 1:  # enough rows
-                    begin_animation(window, values)
+                    animation_start = begin_animation(window, values)
                 else:  
                     if required_size > 31_000:  # max canvas size
                         too_big(columns=columns, pt=px_sieve, lines_per_row=2)
                         pass
                     else:    
-                        popup_event = sg.popup('This will cause the window to reset.\n\nContinue?\n', title='Warning',
-                                        custom_text=('Continue', 'Cancel'), keep_on_top=True)
+                        popup_event = sg.popup('A larger canvas is needed.\nThis will cause the window to reset.\n\nContinue?\n', title='Warning',
+                                        custom_text=('Continue', 'Cancel'), keep_on_top=True, icon=BASE64.icon)
                         if popup_event == 'Continue':
+                            # get graph dimensions
+                            for key in graph_dimensions:
+                                graph_dimensions[key] = int(values[f'manual {key[-2:]}'])
                             graph_dimensions['sy'] = required_size
                             required_size = None  # cleanup
                             window.close()
                             window = mk.make_window(sg, current_theme, values, graph_dimensions, mode=mode, primes_so_far=primes_so_far)
                             window['-TAB GROUP-'].Widget.select(0)
                             set_window(window, values, graph_dimensions, mode)
-                            begin_animation(window, values)
+                            animation_start = begin_animation(window, values)
             except ValueError:
                 pass
 
@@ -662,7 +674,7 @@ def main():
             # text_height = pt_to_px(values[event])  # calculate text size in pixels
             window[event].update(values[event])
 
-        elif event == 'pause sieve':
+        elif (event == 'pause sieve' or (event == 'spacebar' and values['-TAB GROUP-'] == 'sieve tab')) and animation_start:
             print("[LOG] Clicked Pause/Play")
             if max_sieve is not None:
                 animate_sieve = not animate_sieve
@@ -745,16 +757,16 @@ def main():
             print(f"[LOG] Clicked {event}")
             new_theme = values[event][0]
             sg.change_look_and_feel(values['theme list'][0])
-            sg.popup_get_text('This is {}'.format(values['theme list'][0]))
+            sg.popup_get_text('This is {}'.format(values['theme list'][0]), icon=BASE64.icon)
         
         elif event == 'default theme':
             new_theme = default_theme
             sg.change_look_and_feel(default_theme)
-            sg.popup_get_text(f'This is {default_theme}')
+            sg.popup_get_text(f'This is {default_theme}', icon=BASE64.icon)
 
         elif event == 'save settings':
             print(f"[LOG] Clicked {event}")
-            popup_event = sg.popup_ok_cancel("This will cause the window to be remade.\n\nContinue?\n")
+            popup_event = sg.popup_ok_cancel("This will cause the window to be remade.\n\nContinue?\n", any_key_closes=True, icon=BASE64.icon)
             print(f'[LOG] {popup_event = }')
             if popup_event == 'OK':
                 if new_theme is None:
@@ -762,8 +774,6 @@ def main():
                 current_theme, values['theme list'] = new_theme, new_theme
                 new_theme = None
                 # get window values
-                graph_dimensions['sx'], graph_dimensions['sy'] = sieve_graph.get_size()
-                graph_dimensions['nx'], graph_dimensions['ny'] = novelty_graph.get_size()
                 for key in graph_dimensions:
                     graph_dimensions[key] = int(values[f'manual {key[-2:]}'])
                 window.close()
@@ -779,6 +789,31 @@ def main():
         elif event == 'clear log':
             print(f"[LOG] Clicked {event}")
             window['log'].update(value='')
+        
+        elif event == "Full Logging":
+            print(f"[LOG] Clicked {event}, {not logging}")
+            logging =  not logging
+        
+        elif event == 'About':
+            sg.popup_no_buttons(about_text, title='About Me', icon=BASE64.icon, font= '_ 12')
+
+    #################################################################################################
+    # ----- Key Binds -------------------------------------------------------------------------------
+    #################################################################################################
+        elif str(event).startswith("change tab"):
+            next_tab_name = event.split()[2]
+            next_tab = tab_names[next_tab_name + ' tab']
+            window['-TAB GROUP-'].Widget.select(next_tab)
+        
+        elif str(event).startswith('speed') and values['-TAB GROUP-'] == 'sieve tab':
+            print(f"[LOG] Clicked {event}")
+            new_speed = values['sieve speed']
+            new_speed = new_speed + 1 if event.endswith('up') else new_speed - 1
+            if new_speed < 0:
+                new_speed = 0
+            if new_speed > len(sieve_speed_ticks) - 1:
+                new_speed = len(sieve_speed_ticks) - 1
+            window['sieve speed'].update(value=new_speed)
 
     #################################################################################################
     # ----- Animations ------------------------------------------------------------------------------
@@ -786,7 +821,6 @@ def main():
         if animate_sieve:
             print('[LOG] Animation Pass')
             outline_ids = sieve_animation(window, values, max_sieve, px_sieve, outline_ids, mode)
-            # sieve_animation.sieve_animation(window, values, )
             if sieve_animation_steps['finished']:
                 update_interval = 1
                 animate_sieve = False
