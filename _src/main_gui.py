@@ -611,7 +611,7 @@ def main():
     # ----- Sieve Tab -------------------------------------------------------------------------------
     #################################################################################################
         elif event == 'sieve title':
-            webbrowser.open('https://github.com/mikeverwer/novelties/blob/main/README.md#why')
+            webbrowser.open('https://mikeverwer.github.io/programs/novelties/novelties.html')
         elif event == 'go-sieve':
             print(f"[LOG] Clicked {event}")
             try:

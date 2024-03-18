@@ -259,7 +259,9 @@ def make_window(sg: ModuleType, theme='Default1', values: dict=None, graph_dimen
                               sg.Tab('Novelties', novelties_layout),
                               sg.Tab('Settings', settings_layout),
                               sg.Tab('   Log    ', log_layout)
-                              ]], key='-TAB GROUP-', expand_x=True, expand_y=True, font = 'Helvetica 12 bold', title_color=black, tab_background_color='gray', selected_background_color=black if mode == 'dark' else white, selected_title_color=white if mode =='dark' else black
+                              ]], key='-TAB GROUP-', expand_x=True, expand_y=True, font = 'Helvetica 12 bold', title_color=black, tab_background_color='gray', 
+                              selected_background_color=black if mode == 'dark' else white, selected_title_color=white if mode =='dark' else black,
+
                             ),
                 ]]
 

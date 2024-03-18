@@ -1,8 +1,12 @@
-- Novelty & Sieve title 'buttons' link to relavent article  (either via popup or web link)
+- Novelty & Sieve title 'buttons' link to relavent article  (web link)
+    sieve of eratosthenese writeup 
+    change to right click instead of left click
+
+Add Authorship
+    make manual application bar? add it there i think
 
 - update readme
     installation instructions
-    sieve of eratosthenese writeup 
 
 - set up for proper release
     venv (fml)
