@@ -63,8 +63,8 @@
        id="linearGradient7"
        x1="52.066113"
        y1="-116.22015"
-       x2="-14.256821"
-       y2="-115.93951"
+       x2="-0.82191962"
+       y2="-116.11864"
        gradientUnits="userSpaceOnUse" />
   </defs>
   <sodipodi:namedview
@@ -73,9 +73,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="2"
-     inkscape:cx="251.5"
-     inkscape:cy="-185.25"
+     inkscape:zoom="1.4770298"
+     inkscape:cx="345.62606"
+     inkscape:cy="-166.88898"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -87,8 +87,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="-8"
-     inkscape:window-y="-8"
+     inkscape:window-x="1912"
+     inkscape:window-y="46"
      inkscape:window-maximized="1"
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
@@ -833,27 +833,49 @@
          x="-154.05576"
          y="-99.574928" />
     </g>
-    <rect
-       style="opacity:0.998;fill:url(#linearGradient7);fill-opacity:1;stroke:none;stroke-width:0.264998;stroke-linecap:square;paint-order:markers fill stroke"
-       id="rect5"
-       width="90.222916"
-       height="5.0270834"
-       x="-14.304301"
-       y="-118.43417"
+    <g
+       id="g12"
        inkscape:export-filename="author.png"
        inkscape:export-xdpi="96.0011"
-       inkscape:export-ydpi="96.0011" />
-    <text
-       xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;stroke:#ffffff;stroke-width:0.185738;stroke-dasharray:none;stroke-opacity:1"
-       x="50.393997"
-       y="-114.65582"
-       id="text5"><tspan
-         sodipodi:role="line"
-         id="tspan5"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto;-inkscape-font-specification:Roboto;fill:#ffffff;stroke:#ffffff;stroke-width:0.185738;stroke-dasharray:none;stroke-opacity:1"
-         x="50.393997"
+       inkscape:export-ydpi="96.0011">
+      <rect
+         style="opacity:0.998;fill:url(#linearGradient7);fill-opacity:1;stroke:none;stroke-width:0.264998;stroke-linecap:square;paint-order:markers fill stroke"
+         id="rect5"
+         width="109.14172"
+         height="5.0270834"
+         x="-33.223103"
+         y="-118.43417"
+         inkscape:export-filename="author.png"
+         inkscape:export-xdpi="96.0011"
+         inkscape:export-ydpi="96.0011" />
+      <text
+         xml:space="preserve"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:Helvetica;-inkscape-font-specification:'Helvetica Bold';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:middle;fill:#ffffff;stroke:#ffffff;stroke-width:0.185738;stroke-dasharray:none;stroke-opacity:1"
+         x="49.687401"
          y="-114.65582"
-         dx="0 0.093544334 0 -4.459465e-10 0 0 0.093544334 0 0 0 0 0 0 0 0 0 0 0 0.093544334 0.18708867 -4.459465e-10 0.093544334">created by mike verwer</tspan></text>
+         id="text5"><tspan
+           sodipodi:role="line"
+           id="tspan5"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:Roboto;-inkscape-font-specification:Roboto;fill:#ffffff;stroke:#ffffff;stroke-width:0.185738;stroke-dasharray:none;stroke-opacity:1"
+           x="49.687401"
+           y="-114.65582"
+           dx="0 0.093544334 0 -4.459465e-10 0 0 0.093544334 0 0 0 0 0 0 0 0 0 0 0 0.093544334 0.18708867 -4.459465e-10 0.093544334">created by mike verwer</tspan></text>
+      <g
+         id="g11"
+         transform="matrix(0.69925087,0,0,0.70930861,19.603408,-35.131204)"
+         style="stroke-width:1.41992">
+        <rect
+           style="opacity:0.998;fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.3756889;stroke-linecap:square;stroke-dasharray:none;paint-order:markers fill stroke"
+           id="rect6"
+           width="2.7863932"
+           height="4.5976586"
+           x="76.388359"
+           y="-116.19767" />
+        <path
+           style="fill:#ffffff;stroke:#ffffff;stroke-width:0.3756889;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+           d="M 76.382372,-113.34248 H 79.1791"
+           id="path6" />
+      </g>
+    </g>
   </g>
 </svg>

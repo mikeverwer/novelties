@@ -435,7 +435,7 @@ def convert_factors_to_string(prime_dict):
 # MAIN
 #################################################################################################
 def main():
-    about_text = 'Made by Mike Verwer;\nPT-Professor of Mathematics and Statistics @ Mohawk College\n\n\ncontact:   mike.verwer@mohawkcollege.ca\ngithub:     github.com\mikeverwer\nwebsite:  mikeverwer.github.io\n\n\n© 2024 Mike Verwer'
+    about_text = 'Made by Mike Verwer;\nPT-Professor of Mathematics and Statistics @ Mohawk College\n\n\ncontact:   mike.verwer@mohawkcollege.ca\ngithub:     github.com\mikeverwer\nwebsite:  mikeverwer.github.io\n\n\n© 2024'
     current_theme = 'DarkGray4'
     default_theme = current_theme
     new_theme = None
