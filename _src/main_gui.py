@@ -764,7 +764,7 @@ def main():
 
         elif event == 'save settings':
             print(f"[LOG] Clicked {event}")
-            popup_event = sg.popup_ok_cancel("This will cause the window to be remade.\n\nContinue?\n", any_key_closes=True, icon=BASE64.icon)
+            popup_event = sg.popup_ok_cancel("This will cause the window to be remade.\n\nContinue?\n", icon=BASE64.icon)
             print(f'[LOG] {popup_event = }')
             if popup_event == 'OK':
                 if new_theme is None:
