@@ -81,8 +81,8 @@ def main():
         global internal
         internal = True
         try:  # parsing inputs
-            user_input = input("To which number shall we search and from where shall we start? "
-                               "Would you like a display of the process?\nEnter answers separated by spaces.")
+            user_input = input("\nTo which number shall we search and from where shall we start? "
+                               "Would you like a display of the process?\nEnter answers separated by spaces.\n")
             inputs = user_input.split()
 
             first_int = next((int(item) for item in inputs if item.isdigit()), None)
@@ -118,7 +118,7 @@ def main():
                     print(f'The process took {sieves} passes through the sieve and {total_checks} assignments.')
 
                     # break if parsing is successful
-                    break
+                    # break
             except ValueError as e:
                 print('\nNo primes were found in that range.\n')
 
@@ -218,7 +218,7 @@ def primes_up_to_10000():
             9871, 9883, 9887, 9901, 9907, 9923, 9929, 9931, 9941, 9949, 9967, 9973]
 
 
-def primes_up_to_100000():
+def primes_up_to_100_000():
     return [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97, 101, 103,
             107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223,
             227, 229, 233, 239, 241, 251, 257, 263, 269, 271, 277, 281, 283, 293, 307, 311, 313, 317, 331, 337, 347,

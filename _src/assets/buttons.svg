@@ -65,7 +65,8 @@
        y1="-116.22015"
        x2="-0.82191962"
        y2="-116.11864"
-       gradientUnits="userSpaceOnUse" />
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(17.554938,0.53739606)" />
   </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
@@ -74,8 +75,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4770298"
-     inkscape:cx="345.62606"
-     inkscape:cy="-166.88898"
+     inkscape:cx="120.17361"
+     inkscape:cy="-131.68319"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -87,8 +88,8 @@
      inkscape:snap-bbox-midpoints="true"
      inkscape:window-width="1920"
      inkscape:window-height="1017"
-     inkscape:window-x="1912"
-     inkscape:window-y="46"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:bbox-paths="true"
      inkscape:bbox-nodes="true"
@@ -837,7 +838,8 @@
        id="g12"
        inkscape:export-filename="author.png"
        inkscape:export-xdpi="96.0011"
-       inkscape:export-ydpi="96.0011">
+       inkscape:export-ydpi="96.0011"
+       transform="translate(-17.554938,-0.53739606)">
       <rect
          style="opacity:0.998;fill:url(#linearGradient7);fill-opacity:1;stroke:none;stroke-width:0.264998;stroke-linecap:square;paint-order:markers fill stroke"
          id="rect5"
@@ -865,14 +867,14 @@
          transform="matrix(0.69925087,0,0,0.70930861,19.603408,-35.131204)"
          style="stroke-width:1.41992">
         <rect
-           style="opacity:0.998;fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.3756889;stroke-linecap:square;stroke-dasharray:none;paint-order:markers fill stroke"
+           style="opacity:0.998;fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.375689;stroke-linecap:square;stroke-dasharray:none;paint-order:markers fill stroke"
            id="rect6"
            width="2.7863932"
            height="4.5976586"
            x="76.388359"
            y="-116.19767" />
         <path
-           style="fill:#ffffff;stroke:#ffffff;stroke-width:0.3756889;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;stroke-dasharray:none"
+           style="fill:#ffffff;stroke:#ffffff;stroke-width:0.375689;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1"
            d="M 76.382372,-113.34248 H 79.1791"
            id="path6" />
       </g>

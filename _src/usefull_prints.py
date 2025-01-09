@@ -81,9 +81,9 @@ def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff:
                      headings_every_row: bool = True,
                      universal_column: bool = True, universal_width: int = None,
                      recursion: bool = False, heading_space: int = None, string: str = ''
-                     ) -> str | None:
+                    ) -> str | None:
     """
-    Prints multiple lists in rows.  If any of the lists are larger than :param cutoff:, a multi-linebreak occurs and
+    Prints multiple lists in rows via recursion.  If any of the lists are larger than :param cutoff:, a multi-linebreak occurs and
     the remaining entries continue printing. If :param hbars: is True the multi-linebreak is drawn as a horizontal bar.
     Headings can also be added to be printed before the lists, with the option of having them displayed with each multi-
     linebreak.  If :param_vbars: is True, vertical bars are drawn to separate the headings from the lists.
@@ -211,24 +211,29 @@ def multi_list_print(lists: list[list[any]], headings: list[str] = None, cutoff:
                          universal_column, universal_width, string=printable if printable is not None else '', recursion=True, heading_space=heading_space)
     else:
         if give_string and printable is not None:
-            # print(printable)
-            print('done')
-            return printable  # runs but returns None
+            return printable
 
 
 def main():
-    # multi_list_print(
-    #    [['aaaaaaaaaaaaaaa'] + [str(x) for x in range(1, 102)], [str(int(i) ** 2) for i in range(1, 102)],
-    #      [str(int(i) ** 3) for i in range(1, 102)], [str(int(i) ** 4) for i in range(1, 102)]],
-    #     ['x', 'x^2', 'x^3', 'x^4'], cutoff=10,
-    #     hbars=True, vbars='full', headings_every_row=True, universal_column=True, string=False)
-
+    # Full usable argument list:
+    multi_list_print(
+       lists= [['aaaaaaaaaaaaaaa'] + [str(x) for x in range(1, 102)], [str(int(i) ** 2) for i in range(1, 102)],
+         [str(int(i) ** 3) for i in range(1, 102)], [str(int(i) ** 4) for i in range(1, 102)]],
+       headings=['x', 'x^2', 'x^3', 'x^4'], 
+       cutoff=10,
+       hbars=True, 
+       vbars='full', 
+       headings_every_row=True, 
+       universal_column=True,
+       string=False
+    )
+    
     # column_print([str(x ** 2) for x in range(1, 101)], items_per_line=25)
 
-    # multi_list_print([[str(i) for i in range(1, 101)], [str(i ** 4) for i in range(1, 101)]], ['x', 'x^4'])
+    # multi_list_print([[str(i) for i in range(1, 105)], [str(i ** 4) for i in range(1, 105)]], ['x', 'x^4'])
 
-    print(multi_list_print([[str(i) for i in range(1, 101)], [str(i ** 4) for i in range(1, 101)]], hbars=True, vbars='full', universal_column=True, give_string=True))
-    # print(printable)
+    # print(multi_list_print(lists=[[str(i) for i in range(1, 105)], [str(i ** 4) for i in range(1, 105)]], headings=['x', 'x^4'], give_string=True))
+    # print('The above was printed with 1 call to print(), using multi_list_print().')
 
 if __name__ == '__main__':
     main()

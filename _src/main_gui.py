@@ -799,10 +799,10 @@ def main():
             sg.popup_no_buttons(about_text, title='About Me', icon=BASE64.icon, font= '_ 12')
 
         elif event == 'Read about the Sieve of Eratosthenes':
-            webbrowser.open('https://mikeverwer.github.io/docs/eratosthenes.html')
+            webbrowser.open('https://mikeverwer.github.io/articles/eratosthenes.html')
         
         elif event == 'Read about the Novelties':
-            webbrowser.open('https://mikeverwer.github.io/docs/the-novelties.html')
+            webbrowser.open('https://mikeverwer.github.io/articles/the-novelties.html')
 
         elif str(event).startswith("change tab"):
             next_tab_name = event.split()[2]
