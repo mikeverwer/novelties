@@ -9,7 +9,7 @@ import BASE64
 # import sieve_animation
 import PySimpleGUI as sg
 import webbrowser
-import time
+# import time
 import random
 
 update_interval = 1
