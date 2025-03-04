@@ -12,6 +12,13 @@ import webbrowser
 # import time
 import random
 
+# Close the splash screen. Only runs if the program runs from an executable.
+try:
+    import pyi_splash # type: ignore - ignore compiler warning
+    pyi_splash.close()
+except:
+    pass
+
 update_interval = 1
 colours_list = colours.list_colour_names()
 colours_dict = colours.dict_colours()
